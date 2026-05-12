@@ -21,7 +21,7 @@ class StatusComponent: GKComponent {
         ]
         
         self.stateMachine = GKStateMachine(states: states)
-        self.stateMachine.enter(IdleState.self)
+        self.stateMachine.enter(NormalState.self)
     }
     
     required init?(coder: NSCoder) {

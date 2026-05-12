@@ -29,6 +29,7 @@ class ObscuredState: GKState {
     
     override func update(deltaTime seconds: TimeInterval) {
         elapsed += seconds
+        
         if elapsed >= duration {
             stateMachine?.enter(NormalState.self)
         }
@@ -39,5 +40,9 @@ class ObscuredState: GKState {
            let overlay = camera.childNode(withName: "DustOverlay") {
             overlay.run(SKAction.fadeOut(withDuration: 0.5))
         }
+    }
+    
+    func reset() {
+        self.elapsed = 0
     }
 }

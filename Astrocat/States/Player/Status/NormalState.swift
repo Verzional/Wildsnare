@@ -16,7 +16,7 @@ class NormalState: GKState {
     }
     
     override func isValidNextState(_ stateClass: AnyClass) -> Bool {
-        return stateClass == SlowedDownState.self || stateClass == StunnedState.self
+        return stateClass == SlowedDownState.self || stateClass == StunnedState.self || stateClass == ObscuredState.self
     }
     
     override func didEnter(from previousState: GKState?) {

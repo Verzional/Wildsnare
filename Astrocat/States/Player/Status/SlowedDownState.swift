@@ -30,4 +30,8 @@ class SlowedDownState: GKState {
             self.stateMachine?.enter(NormalState.self)
         }
     }
+    
+    func reset() {
+        self.elapsed = 0
+    }
 }
