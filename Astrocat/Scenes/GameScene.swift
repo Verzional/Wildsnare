@@ -20,8 +20,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var previousPlayerBottomY: CGFloat?
     
     // Debug
-    private let showDebugGrid = true
-    private let debugPositionLabel = SKLabelNode(fontNamed: "Menlo")
+    private let showDebugGrid = false
     
     // Player Systems
     var player: PlayerEntity?
@@ -199,21 +198,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    private func setupDebugPositionLabel() {
-        debugPositionLabel.fontSize = 14
-        debugPositionLabel.fontColor = .white
-        debugPositionLabel.horizontalAlignmentMode = .right
-        debugPositionLabel.verticalAlignmentMode = .bottom
-        debugPositionLabel.zPosition = 999
-        
-        debugPositionLabel.position = CGPoint(
-            x: frame.width / 2 - 120,
-            y: -frame.height / 2 + 20
-        )
-        
-        mainCamera.addChild(debugPositionLabel)
-    }
-    
     private func spawnPlatformEntity(_ data: GeneratedPlatform) {
         let node = SKSpriteNode(imageNamed: data.textureName)
         node.position = data.position
@@ -221,6 +205,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         node.name = "Platform"
         node.zPosition = 1
         node.texture?.filteringMode = .nearest
+        
+        // Debug coloring
+//        switch data.type {
+//        case .backbone:   node.color = .blue;      node.colorBlendFactor = 1
+//        case .bridge:     node.color = .magenta;   node.colorBlendFactor = 1
+//        case .start:      node.color = .orange;    node.colorBlendFactor = 1
+//        case .decoration: node.color = .red;       node.colorBlendFactor = 1
+//        }
         
         addChild(node)
         
@@ -287,7 +279,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         super.didMove(to: view)
         self.physicsWorld.contactDelegate = self
         setupCamera()
-        setupDebugPositionLabel()
         setupFloor()
         setupDebugGrid()
         setupLevel()
@@ -358,25 +349,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         body.collisionBitMask = collisionMask
     }
     
-    private func updateDebugPositionLabel() {
-        guard let playerNode = player?.component(ofType: GKSKNodeComponent.self)?.node as? SKSpriteNode else {
-            debugPositionLabel.text = "Player: nil"
-            return
-        }
-        
-        let x = Int(playerNode.position.x)
-        let y = Int(playerNode.position.y)
-        
-        debugPositionLabel.text = "Player x: \(x)  y: \(y)"
-    }
-    
     override func update(_ currentTime: TimeInterval) {
         if lastUpdateTime == 0 { lastUpdateTime = currentTime }
         let dt = currentTime - lastUpdateTime
         
         updateOneWayPlatformCollision()
-        updateDebugPositionLabel()
-        
+
         blackHoleSystem.update(deltaTime: dt)
         movementSystem.update(deltaTime: dt)
         cameraSystem.update(deltaTime: dt)

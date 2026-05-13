@@ -15,7 +15,10 @@ struct LevelConfig {
     let gridRows: Int
     let platformSize: CGSize
     let floorSize: CGSize
-    let isBranchEnabled: Bool
+    
+    // Generation tuning
+    let decorationProbability: CGFloat
+    let maxPlatformsPerRow: Int
     
     static let defaultConfig = LevelConfig(
         mapWidth: 2500,
@@ -25,6 +28,7 @@ struct LevelConfig {
         gridRows: 40,
         platformSize: CGSize(width: 120, height: 40),
         floorSize: CGSize(width: 2500, height: 30),
-        isBranchEnabled: false
+        decorationProbability: 45,
+        maxPlatformsPerRow: 2
     )
 }
