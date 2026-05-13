@@ -53,8 +53,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         mainCamera.addChild(overlay)
     }
     
+    private func setupBackground() {
+        let background = SKSpriteNode(imageNamed: "MapEarth")
+        background.position = CGPoint(
+            x: levelConfig.mapWidth / 2,
+            y: levelConfig.finishLineY / 2 - 170
+        )
+        background.size = CGSize(
+            width: levelConfig.mapWidth,
+            height: levelConfig.finishLineY + 320
+        )
+        background.zPosition = -10
+        background.texture?.filteringMode = .nearest
+        addChild(background)
+    }
+    
     private func setupFloor() {
-        let node = SKSpriteNode(color: .red, size: levelConfig.floorSize)
+        let node = SKSpriteNode(color: .clear, size: levelConfig.floorSize)
         node.position = CGPoint(
             x: levelConfig.mapWidth / 2,
             y: levelConfig.startY
@@ -69,6 +84,33 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         node.physicsBody?.collisionBitMask = PhysicsCategory.player
         
         addChild(node)
+    }
+    
+    private func setupWalls() {
+        let wallThickness: CGFloat = 20
+        let wallHeight = levelConfig.finishLineY + 500
+        
+        // Left wall
+        let leftWall = SKNode()
+        leftWall.position = CGPoint(x: -wallThickness / 2, y: wallHeight / 2)
+        leftWall.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: wallThickness, height: wallHeight))
+        leftWall.physicsBody?.isDynamic = false
+        leftWall.physicsBody?.friction = 0
+        leftWall.physicsBody?.restitution = 0
+        leftWall.physicsBody?.categoryBitMask = PhysicsCategory.floor
+        leftWall.physicsBody?.collisionBitMask = PhysicsCategory.player
+        addChild(leftWall)
+        
+        // Right wall
+        let rightWall = SKNode()
+        rightWall.position = CGPoint(x: levelConfig.mapWidth + wallThickness / 2, y: wallHeight / 2)
+        rightWall.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: wallThickness, height: wallHeight))
+        rightWall.physicsBody?.isDynamic = false
+        rightWall.physicsBody?.friction = 0
+        rightWall.physicsBody?.restitution = 0
+        rightWall.physicsBody?.categoryBitMask = PhysicsCategory.floor
+        rightWall.physicsBody?.collisionBitMask = PhysicsCategory.player
+        addChild(rightWall)
     }
     
     private func setupUI() {
@@ -279,7 +321,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         super.didMove(to: view)
         self.physicsWorld.contactDelegate = self
         setupCamera()
+        setupBackground()
         setupFloor()
+        setupWalls()
         setupDebugGrid()
         setupLevel()
         setupTraps()
