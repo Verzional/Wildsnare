@@ -25,6 +25,8 @@ class MovementSystem: GKComponent {
         if let slowedState = status.stateMachine.currentState as? SlowedDownState {
             currentSpeed *= slowedState.modifier
             currentImpulse *= slowedState.modifier
+            print(currentSpeed)
+            print(currentImpulse)
         }
         
         // Handle Stunned State
@@ -45,10 +47,12 @@ class MovementSystem: GKComponent {
         }
         
         // Handle Jump
-        if input.wantsToJump && !(locomotion.stateMachine.currentState is JumpingState) {
-            locomotion.stateMachine.enter(JumpingState.self)
-            
-            node.physicsBody?.applyImpulse(CGVector(dx: 0, dy: currentImpulse))
+        if input.wantsToJump {
+            if !(locomotion.stateMachine.currentState is JumpingState) {
+                locomotion.stateMachine.enter(JumpingState.self)
+                
+                node.physicsBody?.applyImpulse(CGVector(dx: 0, dy: currentImpulse))
+            }
             
             input.wantsToJump = false
         }
