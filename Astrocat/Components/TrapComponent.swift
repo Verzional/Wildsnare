@@ -28,9 +28,11 @@ class TrapComponent: GKComponent {
         }
     }
     
-    // Black Hole & Force Field
+    // Black Hole
     var radius: CGFloat = 150.0
     var pullForce: CGFloat = 1000.0
+    
+    // Force Field
     var impulseForce: CGFloat = 100.0
     var repelDuration: TimeInterval = 1.0
     
