@@ -16,6 +16,7 @@ enum MatchMode {
 enum MatchManagerState: Equatable, Codable {
     case unauthenticated
     case authenticated
+    case inLobby
     case inGame
 }
 

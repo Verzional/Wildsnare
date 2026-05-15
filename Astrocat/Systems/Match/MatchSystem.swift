@@ -66,6 +66,25 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     
     // MARK: Match Lifecycle
     func startMatch(mode: MatchMode){
+        let request = GKMatchRequest()
+        
+        switch mode {
+        case .quickMatch (let playerCount):
+            request.minPlayers = 2
+            request.maxPlayers = playerCount
+        case .inviteFriend (let playerCount):
+            request.minPlayers = 2
+            request.maxPlayers = playerCount
+            break
+        }
+        
+        request.inviteMessage = "Join me in a Astrocat!"
+        
+        let viewController = GKMatchmakerViewController(matchRequest: request)
+        guard let vc = viewController else { return }
+        vc.matchmakerDelegate = self
+        
+        onPresentViewController?(vc)
         
     }
     
@@ -100,7 +119,21 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     }
     
     nonisolated func matchmakerViewController(_ viewController: GKMatchmakerViewController, didFind match: GKMatch) {
-    
+        
+        Task {
+            @MainActor in
+            viewController.dismiss(animated: true)
+            self.match = match
+            match.delegate = self
+            readyPlayersIDs.removeAll()
+            hasSentGameStart = false
+
+            let allPlayers = match.players + [GKLocalPlayer.local]
+            let sortedIDs = allPlayers.map { $0.gamePlayerID }.sorted()
+            self.isHost = sortedIDs.first == GKLocalPlayer.local.gamePlayerID
+            
+            matchState = .inLobby
+        }
     }
     
     
