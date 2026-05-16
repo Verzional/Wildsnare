@@ -31,6 +31,8 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     var onPlayerFinishedReceived: ((GameMessage) -> Void)?
     var onFinalResultsReceived: (([RaceResult]) -> Void)?
     var onPresentViewController: ((UIViewController) -> Void)?
+    var onStartSolo: (()-> Void)?
+    
 
     
     // MARK: Authentication

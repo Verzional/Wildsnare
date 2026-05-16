@@ -22,6 +22,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let hostingVC = UIHostingController(rootView: MatchmakingView().environmentObject(matchSystem))
         
+        matchSystem.onStartSolo = { [weak hostingVC] in
+            let gameVC = GameViewController()
+            gameVC.modalPresentationStyle = .fullScreen
+            hostingVC?.present(gameVC, animated: true)
+        }
+        
         matchSystem.onPresentViewController = { [weak hostingVC] vc in
             hostingVC?.present(vc, animated: true)
         }

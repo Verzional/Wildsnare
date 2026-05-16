@@ -12,6 +12,9 @@ struct MatchmakingView: View {
     
     var body: some View {
         VStack {
+            Button("Play Solo"){
+                matchSystem.onStartSolo?()
+            }
             Button("Quick Match") {
                 matchSystem.startMatch(mode: .quickMatch(playerCount: 2))
             }

@@ -39,7 +39,11 @@ class GameViewController: UIViewController {
             }
         }
     }
-
+    
+    override func loadView() {
+        self.view = SKView()
+    }
+    
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         if UIDevice.current.userInterfaceIdiom == .phone {
             return .allButUpsideDown
