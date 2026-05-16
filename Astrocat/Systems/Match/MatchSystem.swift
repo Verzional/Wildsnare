@@ -75,7 +75,6 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         case .inviteFriend (let playerCount):
             request.minPlayers = 2
             request.maxPlayers = playerCount
-            break
         }
         
         request.inviteMessage = "Join me in a Astrocat!"
@@ -133,7 +132,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             Task { @MainActor [weak self] in
                 self?.forceStartIfHost()
             }
-            
+
         }
     }
     
