@@ -88,12 +88,47 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         onPresentViewController?(vc)
     }
     
-    func leaveMatch(){
+    func leaveMatch() {
+        readyHeartbeatTimer?.invalidate()
+        readyHeartbeatTimer = nil
+        hostStartTimeoutTimer?.invalidate()
+        hostStartTimeoutTimer = nil
         
+        match?.disconnect()
+        match = nil
+        
+        readyPlayersIDs.removeAll()
+        hasSentGameStart = false
+        isHost = false
+        randomSeed = nil
+        raceStarted = false
+        playerTimes.removeAll()
+        matchState = .authenticated
     }
     
     func localPlayerFinished(time: TimeInterval){
+        let localID = GKLocalPlayer.local.gamePlayerID
+        let localName = GKLocalPlayer.local.alias
+        playerTimes[localID] = time
         
+        let msg = GameMessage.playerFinished(senderID: localID, finishTime: time)
+        send(msg, with: .reliable)
+        
+        checkAndBroadcastFinalResults()
+    }
+    
+    private func checkAndBroadcastFinalResults() {
+        guard isHost else { return }
+        let expectedCount = (match?.players.count ?? 0) + 1
+        guard playerTimes.count >= expectedCount else { return }
+        
+        let sorted = playerTimes.sorted { $0.value < $1.value }
+        let results = sorted.map { (id, time) in
+            RaceResult(senderID: id, playerName: id, finishTime: time)
+        }
+        let msg = GameMessage.finalResults(finalResults: results)
+        send(msg, with: .reliable)
+        onFinalResultsReceived?(results)
     }
     
     // MARK: Ready Heartbeat
@@ -181,20 +216,44 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
                     readyPlayersIDs.insert(player.gamePlayerID)
                 }
                 tryStartIfHost()
-            default:
-                break
+            case .playerFinished:
+                if let id = message.senderID, let time = message.finishTime {
+                    playerTimes[id] = time
+                }
+                onPlayerFinishedReceived?(message)
+                checkAndBroadcastFinalResults()
+                
+            case .playerUpdate:
+                onPlayerUpdateReceived?(message)
+                
+            case .finalResults:
+                if let results = message.finalResults {
+                    onFinalResultsReceived?(results)
+                }
+            case .roundStart:
+                if let round = message.roundIndex,
+                   let seed = message.randomSeed,
+                   let epoch = message.startTimeEpoch {
+                    onRoundStartReceived?(round, seed, epoch)
+                }
             }
         }
         
     }
     
-    nonisolated func match(_ match: GKMatch, player: GKPlayer, didChange state: GKPlayerConnectionState){
-        
+    nonisolated func match(_ match: GKMatch, player: GKPlayer, didChange state: GKPlayerConnectionState) {
+        guard state == .disconnected else { return }
+        Task { @MainActor [weak self] in
+            self?.leaveMatch()
+        }
     }
     
-    nonisolated func match(_ match: GKMatch, didFailWithError error: Error?){
-        
+    nonisolated func match(_ match: GKMatch, didFailWithError error: Error?) {
+        Task { @MainActor [weak self] in
+            self?.leaveMatch()
+        }
     }
+    
     
     // MARK: GKLocalPlayerListener
     nonisolated func player(_ player: GKPlayer, didAccept invite: GKInvite){
