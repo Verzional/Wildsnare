@@ -200,6 +200,10 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             print("[MatchSystem] send error: \(error)")        }
     }
     
+    func sendPlayerUpdate(_ message: GameMessage) {
+        send(message, with: .unreliable)
+    }
+    
     // MARK: GKMatchDelegate
     nonisolated func match(_ match: GKMatch, didReceive data: Data, fromRemotePlayer player: GKPlayer){
         
