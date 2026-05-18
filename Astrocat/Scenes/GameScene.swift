@@ -41,6 +41,32 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var forceFieldSystem = GKComponentSystem(componentClass: ForceFieldSystem.self)
     var cometDustSystem = GKComponentSystem(componentClass: CometDustSystem.self)
     
+    // Multiplayer Systems
+    var remotePlayers: [String: RemotePlayerEntity] = [:]
+    var matchSystem: MatchSystem?
+    
+    private func setupMultiplayer() {
+        guard let matchSystem = matchSystem else { return }
+        
+        matchSystem.onPlayerUpdateReceived = { [weak self] message in
+            guard let self = self,
+                  let id = message.senderID,
+                  let x = message.playerX,
+                  let y = message.playerY else { return }
+            
+            if self.remotePlayers[id] == nil {
+                let remoteEntity = RemotePlayerEntity(scene: self)
+                self.remotePlayers[id] = remoteEntity
+            }
+            self.remotePlayers[id]?.updatePosition(x: x, y: y)
+        }
+        
+        matchSystem.onPlayerDisconnected = { [weak self] id in
+            self?.remotePlayers[id]?.removeFromScene()
+            self?.remotePlayers.removeValue(forKey: id)
+        }
+    }
+    
     var playerInput: InputComponent? {
         return player?.component(ofType: InputComponent.self)
     }
@@ -418,6 +444,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 //        setupTraps()
         setupPlayer()
         setupUI()
+        setupMultiplayer()
     }
     
     // MARK: - Update
