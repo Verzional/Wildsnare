@@ -1,7 +1,11 @@
 {
   "images" : [
     {
+<<<<<<< HEAD
       "filename" : "pixil-frame-0.png",
+=======
+      "filename" : "map_space.png",
+>>>>>>> 485154e (style: add assets, font, wallpaper space, cat astronaut)
       "idiom" : "universal",
       "scale" : "1x"
     },
