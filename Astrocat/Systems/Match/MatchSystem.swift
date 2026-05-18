@@ -30,8 +30,8 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     var onPlayerUpdateReceived: ((GameMessage) -> Void)?
     var onPlayerFinishedReceived: ((GameMessage) -> Void)?
     var onFinalResultsReceived: (([RaceResult]) -> Void)?
-    var onPresentViewController: ((UIViewController) -> Void)?
-    var onStartSolo: (()-> Void)?
+    var onPresentViewController: (@MainActor (UIViewController) -> Void)?
+    var onStartSolo: (@MainActor () -> Void)?
     var onStartMultiplayer: (@MainActor () -> Void)?
 
     
