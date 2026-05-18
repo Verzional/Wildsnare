@@ -3,7 +3,7 @@
 //  Astrocat
 //
 //  Created by Valentino Manuel Gunawan on 30/04/26.
-//
+//  test
 
 import SpriteKit
 import GameplayKit
@@ -45,7 +45,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Multiplayer Systems
     var remotePlayers: [String: RemotePlayerEntity] = [:]
     var matchSystem: MatchSystem?
-    var onGameFinished: (([RaceResult]) -> Void)? 
+    var onGameFinished: (([RaceResult]) -> Void)?
     
     private func setupMultiplayer() {
         guard let matchSystem = matchSystem else { return }
