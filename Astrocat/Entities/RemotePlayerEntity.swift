@@ -26,9 +26,13 @@ class RemotePlayerEntity: GKEntity {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updatePosition(x: CGFloat, y: CGFloat) {
+    func updatePosition(x: CGFloat, y: CGFloat, dx: CGFloat) {
         let move = SKAction.move(to: CGPoint(x: x, y: y), duration: 0.1)
         node.run(move, withKey: "remoteMove")
+        
+        if dx != 0 {
+            node.xScale = dx > 0 ? abs(node.xScale) : -abs(node.xScale)
+        }
     }
     
     func removeFromScene() {
