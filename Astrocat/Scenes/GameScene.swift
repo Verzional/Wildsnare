@@ -7,6 +7,7 @@
 
 import SpriteKit
 import GameplayKit
+import GameKit
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     var entities = [GKEntity]()
@@ -65,6 +66,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self?.remotePlayers[id]?.removeFromScene()
             self?.remotePlayers.removeValue(forKey: id)
         }
+    }
+    
+    private func broadcastLocalPosition() {
+        guard let matchSystem = matchSystem,
+              matchSystem.matchState == .inGame,
+              let node = player?.component(ofType: GKSKNodeComponent.self)?.node,
+              let body = node.physicsBody else { return }
+        
+        let localID = GKLocalPlayer.local.gamePlayerID
+        let msg = GameMessage.playerUpdate(
+            senderID: localID,
+            playerX: node.position.x,
+            playerY: node.position.y,
+            playerDX: body.velocity.dx,
+            playerDY: body.velocity.dy
+        )
+        matchSystem.sendPlayerUpdate(msg)
     }
     
     var playerInput: InputComponent? {
@@ -519,6 +537,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         movementSystem.update(deltaTime: dt)
         cameraSystem.update(deltaTime: dt)
         stateSystem.update(deltaTime: dt)
+        
+        broadcastLocalPosition()
         
         lastUpdateTime = currentTime
     }
