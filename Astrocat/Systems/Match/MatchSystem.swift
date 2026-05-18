@@ -33,6 +33,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     var onPresentViewController: (@MainActor (UIViewController) -> Void)?
     var onStartSolo: (@MainActor () -> Void)?
     var onStartMultiplayer: (@MainActor () -> Void)?
+    var onPlayerDisconnected: ((String) -> Void)?
 
     
     // MARK: Authentication
@@ -244,6 +245,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     nonisolated func match(_ match: GKMatch, player: GKPlayer, didChange state: GKPlayerConnectionState) {
         guard state == .disconnected else { return }
         Task { @MainActor [weak self] in
+            self?.onPlayerDisconnected?(player.gamePlayerID)
             self?.leaveMatch()
         }
     }
@@ -262,7 +264,10 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     
     // MARK: GKMatchMakerViewControllerDelegate
     nonisolated func matchmakerViewControllerWasCancelled(_ viewController: GKMatchmakerViewController) {
-        
+        Task { @MainActor [weak self] in
+            self?.matchState = .authenticated 
+            viewController.dismiss(animated: true)
+        }
     }
     
     nonisolated func matchmakerViewController(_ viewController: GKMatchmakerViewController, didFailWithError error: any Error) {
