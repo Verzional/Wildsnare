@@ -32,6 +32,9 @@ class TrapEntity: GKEntity {
         // Component
         addComponent(TrapComponent(type: type))
         
+        // Physics
+        setupPhysics(for: node, type: type)
+        
         // Systems
         switch type {
         case .blackHole:
@@ -45,15 +48,35 @@ class TrapEntity: GKEntity {
         case .cometDust:
             addComponent(CometDustSystem())
         }
-        
-        // Physics
-        if let body = node.physicsBody {
-            body.categoryBitMask = PhysicsCategory.trap
-            body.collisionBitMask = 0
-        }
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func setupPhysics(for node: SKSpriteNode, type: TrapType) {
+        switch type {
+        case .blackHole:
+            node.physicsBody = nil
+        case .forceField:
+            node.physicsBody = SKPhysicsBody(circleOfRadius: node.size.width / 2)
+        case .cometDust:
+            node.physicsBody = SKPhysicsBody(circleOfRadius: node.size.width * 0.35)
+        case .electricCoil, .purpleSlime:
+            if let texture = node.texture {
+                node.physicsBody = SKPhysicsBody(texture: texture, size: node.size)
+            }
+        }
+        
+        guard let body = node.physicsBody else { return }
+        
+        body.isDynamic = false
+        body.affectedByGravity = false
+        body.allowsRotation = false
+        body.pinned = false
+        
+        body.categoryBitMask = PhysicsCategory.trap
+        body.contactTestBitMask = PhysicsCategory.player
+        body.collisionBitMask = PhysicsCategory.none
     }
 }

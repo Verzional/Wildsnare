@@ -38,6 +38,7 @@ class PlayerEntity: GKEntity {
         if let body = node.physicsBody {
             body.categoryBitMask = PhysicsCategory.player
             body.contactTestBitMask = PhysicsCategory.trap | PhysicsCategory.finish
+            body.collisionBitMask &= ~PhysicsCategory.trap
             body.collisionBitMask = PhysicsCategory.floor
             body.allowsRotation = false
         }

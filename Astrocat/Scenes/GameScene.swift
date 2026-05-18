@@ -325,30 +325,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         node.size = size
-        node.zPosition = 2
-        node.texture?.filteringMode = .nearest
-        
-        switch data.type {
-        case .blackHole:
-            node.physicsBody = nil
-        case .forceField:
-            node.physicsBody = SKPhysicsBody(circleOfRadius: size.width / 2)
-        case .cometDust:
-            node.physicsBody = SKPhysicsBody(circleOfRadius: size.width * 0.35)
-        case .electricCoil, .purpleSlime:
-            if let texture = node.texture {
-                node.physicsBody = SKPhysicsBody(texture: texture, size: node.size)
-            }
-        }
-        
-        if let body = node.physicsBody {
-            body.isDynamic = false
-            body.affectedByGravity = false
-            body.allowsRotation = false
-            body.categoryBitMask = PhysicsCategory.trap
-            body.contactTestBitMask = PhysicsCategory.player
-            body.collisionBitMask = PhysicsCategory.none
-        }
         
         addChild(node)
         animateSprite(sprite: node, atlasName: atlasName, prefix: prefix)
@@ -451,7 +427,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
               let body = playerNode.physicsBody
         else { return }
 
-        var collisionMask: UInt32 = PhysicsCategory.trap | PhysicsCategory.floor
+        var collisionMask: UInt32 = PhysicsCategory.floor
 
         let playerBottomY = playerNode.position.y - playerNode.size.height / 2
         let lastBottomY = previousPlayerBottomY ?? playerBottomY
