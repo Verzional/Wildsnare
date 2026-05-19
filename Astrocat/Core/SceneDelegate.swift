@@ -33,8 +33,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
         
         matchSystem.onStartMultiplayer = { [weak self, weak hostingVC] in
+            guard let self = self else { return }
             let gameVC = GameViewController()
-            gameVC.matchSystem = self?.matchSystem
+            gameVC.matchSystem = self.matchSystem
             gameVC.modalPresentationStyle = .fullScreen
             gameVC.levelSeed = self.matchSystem.randomSeed
             hostingVC?.present(gameVC, animated: true)
