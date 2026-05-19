@@ -12,7 +12,7 @@ class CameraComponent: GKComponent {
     let cameraNode: SKCameraNode
     var target: SKNode?
     var lerpFactor: CGFloat = 0.1
-    var offset = CGPoint(x: 0, y: 260)
+    var offset = CGPoint(x: 0, y: 440)
     var bounds: CGRect?
 
     init(camera: SKCameraNode) {
