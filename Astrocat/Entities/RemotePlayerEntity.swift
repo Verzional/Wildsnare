@@ -27,7 +27,8 @@ class RemotePlayerEntity: GKEntity {
     }
     
     func updatePosition(x: CGFloat, y: CGFloat, dx: CGFloat, dy: CGFloat) {
-        let move = SKAction.move(to: CGPoint(x: x, y: y), duration: 0.1)
+        node.removeAction(forKey: "remoteMove")
+        let move = SKAction.move(to: CGPoint(x: x, y: y), duration: 0.06)
         node.run(move, withKey: "remoteMove")
         
         if dx != 0 {
@@ -35,7 +36,8 @@ class RemotePlayerEntity: GKEntity {
         }
         
         let tilt: CGFloat = dy > 50 ? -5 : (dy < -50 ? 5 : 0)
-        let rotate = SKAction.rotate(toAngle: tilt * (.pi / 180), duration: 0.1)
+        node.removeAction(forKey: "remoteTilt")
+        let rotate = SKAction.rotate(toAngle: tilt * (.pi / 180), duration: 0.06)
         node.run(rotate, withKey: "remoteTilt")
     }
     
