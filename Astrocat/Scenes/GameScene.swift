@@ -24,7 +24,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private let wallThickness: CGFloat = 20
     
     var levelSeed: UInt64?
-    let cameraOffsetY: CGFloat = 260
+    let cameraOffsetY: CGFloat = 440
     
     // Debug
     private let showDebugGrid = false
@@ -131,11 +131,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let background = SKSpriteNode(imageNamed: "MapEarth")
         background.position = CGPoint(
             x: levelConfig.mapWidth / 2,
-            y: levelConfig.finishLineY / 2 - 170
+            y: levelConfig.finishLineY / 2 - 30
         )
         background.size = CGSize(
             width: levelConfig.mapWidth,
-            height: levelConfig.finishLineY + 320
+            height: levelConfig.finishLineY + 200
         )
         background.zPosition = -10
         background.texture?.filteringMode = .nearest
@@ -474,7 +474,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func didMove(to view: SKView) {
         super.didMove(to: view)
         self.physicsWorld.contactDelegate = self
-//        removeSksTestArea()
+        removeSksTestArea()
         setupCamera()
         setupBackground()
         setupFloor()
