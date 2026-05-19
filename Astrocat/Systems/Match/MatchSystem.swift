@@ -83,20 +83,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             onPresentViewController?(vc)
         }
     }
-    
-    private func didFindMatch(_ match: GKMatch) {
-        self.match = match
-        match.delegate = self
-        readyPlayersIDs.removeAll()
-        hasSentGameStart = false
-        
-        let allPlayers = match.players + [GKLocalPlayer.local]
-        let sortedIDs = allPlayers.map { $0.gamePlayerID }.sorted()
-        self.isHost = sortedIDs.first == GKLocalPlayer.local.gamePlayerID
-        
-        matchState = .inLobby
-        startReadyHeartbeat()
-    }
+
     
     func leaveMatch() {
         readyHeartbeatTimer?.invalidate()
@@ -271,8 +258,14 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     
     
     // MARK: GKLocalPlayerListener
-    nonisolated func player(_ player: GKPlayer, didAccept invite: GKInvite){
-        
+    nonisolated func player(_ player: GKPlayer, didAccept invite: GKInvite) {
+        Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            
+            guard let vc = GKMatchmakerViewController(invite: invite) else { return }
+            vc.matchmakerDelegate = self
+            self.onPresentViewController?(vc)
+        }
     }
     
     // MARK: GKMatchMakerViewControllerDelegate
@@ -283,7 +276,16 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         }
     }
     
-    nonisolated func matchmakerViewController(_ viewController: GKMatchmakerViewController, didFailWithError error: any Error) {
+    nonisolated func matchmakerViewController(
+        _ viewController: GKMatchmakerViewController,
+        didFailWithError error: any Error
+    ) {
+        Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            viewController.dismiss(animated: true)
+            self.lastErrorMessage = error.localizedDescription
+            self.matchState = .authenticated
+        }
     }
     
     nonisolated func matchmakerViewController(_ viewController: GKMatchmakerViewController, didFind match: GKMatch) {
