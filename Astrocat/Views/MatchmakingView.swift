@@ -68,7 +68,7 @@ struct MatchmakingView: View {
                             matchSystem.startMatch(mode: .inviteFriend(playerCount: 2))
                         }
 
-                        AstroCatButton(title: "PLAY SOLO") {
+                        AstroCatButton(title: "Singleplayer") {
                             matchSystem.onStartSolo?()
                         }
                     }
