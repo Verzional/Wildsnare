@@ -69,7 +69,7 @@ struct MatchmakingView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.horizontal, 30)
+                    .padding(.horizontal, 45)
                     .padding(.bottom, 65)
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -102,7 +102,7 @@ struct AstroCatButton: View {
                     .frame(maxWidth: .infinity, maxHeight: 65)
 
                 Text(title)
-                    .font(.custom("UpheavalTT-BRK-", size: 32))
+                    .font(.custom("UpheavalTT-BRK-", size: 30))
                     .foregroundColor(Color(red: 0 / 255, green: 16 / 255, blue: 75 / 255))
                     .frame(maxWidth: .infinity, alignment: .center)
             }

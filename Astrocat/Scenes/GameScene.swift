@@ -472,7 +472,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupPlayer()
         setupMultiplayer()
         setupUI()
-        setupMultiplayer()
     }
     
     // MARK: - Update
@@ -564,6 +563,7 @@ extension GameScene {
             
             handleContact(playerNode: playerNode, trapNode: trapNode)
         }
+        
     }
     
     private func handleContact(playerNode: SKNode?, trapNode: SKNode?) {
