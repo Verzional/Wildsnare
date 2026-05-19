@@ -61,12 +61,8 @@ struct MatchmakingView: View {
 
                     // MARK: - Buttons
                     VStack(spacing: 14) {
-                        AstroCatButton(title: "QUICK MATCH") {
-                            matchSystem.startMatch(mode: .quickMatch(playerCount: 2))
-                        }
-
-                        AstroCatButton(title: "INVITE FRIENDS") {
-                            matchSystem.startMatch(mode: .inviteFriend(playerCount: 2))
+                        AstroCatButton(title: "Multiplayer") {
+                            matchSystem.startMatch(mode: .multiplayer)
                         }
 
                         AstroCatButton(title: "Singleplayer") {

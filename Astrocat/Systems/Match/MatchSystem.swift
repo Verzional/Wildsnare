@@ -70,31 +70,14 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     // MARK: Match Lifecycle
     func startMatch(mode: MatchMode) {
         switch mode {
-            
-        case .quickMatch(let playerCount):
+        case .solo:
+            onStartSolo?()
+        case .multiplayer:
             let request = GKMatchRequest()
             request.minPlayers = 2
-            request.maxPlayers = playerCount
-            request.inviteMessage = "Join me in Astrocat!"
-            
-            GKMatchmaker.shared().findMatch(for: request) { [weak self] match, error in
-                Task { @MainActor [weak self] in
-                    guard let self = self else { return }
-                    if let error = error {
-                        self.lastErrorMessage = error.localizedDescription
-                        return
-                    }
-                    guard let match = match else { return }
-                    self.didFindMatch(match)
-                }
-            }
-            
-        case .inviteFriend(let playerCount):
-            let request = GKMatchRequest()
-            request.minPlayers = 2
-            request.maxPlayers = playerCount
-            request.inviteMessage = "Join me in Astrocat!"
-            
+            request.maxPlayers = 4
+            request.inviteMessage = "Race me in Astrocat! 🚀"
+
             guard let vc = GKMatchmakerViewController(matchRequest: request) else { return }
             vc.matchmakerDelegate = self
             onPresentViewController?(vc)

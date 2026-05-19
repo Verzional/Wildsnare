@@ -9,8 +9,8 @@ import Foundation
 import CoreGraphics
 
 enum MatchMode {
-    case quickMatch(playerCount: Int)
-    case inviteFriend(playerCount: Int)
+    case solo
+    case multiplayer
 }
 
 enum MatchManagerState: Equatable, Codable {
