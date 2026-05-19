@@ -16,9 +16,7 @@ class GameViewController: UIViewController {
     
     var matchSystem: MatchSystem?
     
-    
-    var matchSystem: MatchSystem?
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
