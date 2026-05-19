@@ -61,8 +61,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.remotePlayers[id] = remoteEntity
             }
             let dx = message.playerDX ?? 0
-            self.remotePlayers[id]?.updatePosition(x: x, y: y, dx: dx)
-
+            let dy = message.playerDY ?? 0
+            self.remotePlayers[id]?.updatePosition(x: x, y: y, dx: dx, dy: dy)
         }
         
         matchSystem.onPlayerDisconnected = { [weak self] id in
@@ -437,7 +437,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             gridNode.addChild(line)
         }
 
-        // Mark column centers
+        nonisolated func matchmakerViewController(
         for column in 0..<levelConfig.gridColumns {
             let x = CGFloat(column) * cellWidth + cellWidth / 2
 
@@ -471,6 +471,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 //        setupTraps()
         setupPlayer()
         setupUI()
+        setupMultiplayer()
+        
     }
     
     // MARK: - Update
