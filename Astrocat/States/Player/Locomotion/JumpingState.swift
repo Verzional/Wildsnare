@@ -11,10 +11,6 @@ import SpriteKit
 class JumpingState: GKState {
     unowned let locomotionComponent: LocomotionComponent
 
-    lazy var jumpAnimation: SKAction = {
-        return SKAction.buildAnimation(atlasName: "N-Jump", prefix: "NJ")
-    }()
-
     init(component: LocomotionComponent) {
         self.locomotionComponent = component
         super.init()
@@ -30,6 +26,8 @@ class JumpingState: GKState {
               let sprite = nodeComponent.node as? SKSpriteNode else {
             return
         }
+        
+        let jumpAnimation = SKAction.playerAnimation(skinPrefix: locomotionComponent.skinPrefix, animation: .jump)
         
         sprite.run(jumpAnimation, withKey: "playerAnimation")
     }

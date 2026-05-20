@@ -11,10 +11,6 @@ import SpriteKit
 class RunningState: GKState {
     unowned let locomotionComponent: LocomotionComponent
     
-    lazy var runAnimation: SKAction = {
-        return SKAction.buildAnimation(atlasName: "N-Run", prefix: "NR")
-    }()
-    
     init(component: LocomotionComponent) {
         self.locomotionComponent = component
         super.init()
@@ -30,6 +26,8 @@ class RunningState: GKState {
               let sprite = nodeComponent.node as? SKSpriteNode else {
             return
         }
+        
+        let runAnimation = SKAction.playerAnimation(skinPrefix: locomotionComponent.skinPrefix, animation: .run)
         
         sprite.run(runAnimation, withKey: "playerAnimation")
     }

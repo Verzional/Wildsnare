@@ -12,10 +12,6 @@ class RepelledState: GKState {
     var elapsed: TimeInterval = 0.0
     var duration: TimeInterval = 0.0
     
-    lazy var stressAnimation: SKAction = {
-        return SKAction.buildAnimation(atlasName: "N-Dizzy", prefix: "ND")
-    }()
-    
     init(component: StatusComponent) {
         self.statusComp = component
         super.init()
@@ -29,6 +25,8 @@ class RepelledState: GKState {
               let sprite = nodeComponent.node as? SKSpriteNode else {
             return
         }
+        
+        let stressAnimation = SKAction.playerAnimation(skinPrefix: statusComp.skinPrefix, animation: .dizzy)
         
         sprite.run(stressAnimation, withKey: "playerAnimation")
     }

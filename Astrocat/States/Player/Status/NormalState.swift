@@ -9,11 +9,7 @@ import GameplayKit
 
 class NormalState: GKState {
     unowned let statusComp: StatusComponent
-    
-    lazy var runAnimation: SKAction = {
-        return SKAction.buildAnimation(atlasName: "N-Run", prefix: "NR")
-    }()
-    
+        
     init(component: StatusComponent) {
         self.statusComp = component
         super.init()
@@ -29,6 +25,8 @@ class NormalState: GKState {
               let sprite = nodeComponent.node as? SKSpriteNode else {
             return
         }
+        
+        let runAnimation = SKAction.playerAnimation(skinPrefix: statusComp.skinPrefix, animation: .run)
         
         sprite.run(runAnimation, withKey: "playerAnimation")
     }

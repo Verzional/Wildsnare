@@ -9,6 +9,7 @@ import GameplayKit
 
 class StatusComponent: GKComponent {
     var stateMachine: GKStateMachine!
+    var skinPrefix: String = "N"
     
     override init() {
         super.init()

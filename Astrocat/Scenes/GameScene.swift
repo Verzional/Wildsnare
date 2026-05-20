@@ -522,6 +522,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         childNode(withName: "//TestArea")?.removeFromParent()
     }
     
+    private func applyCurrentRoundSkinToPlayer() {
+        player?.component(ofType: LocomotionComponent.self)?.skinPrefix = currentRoundConfig.playerSkinPrefix
+        player?.component(ofType: StatusComponent.self)?.skinPrefix = currentRoundConfig.playerSkinPrefix
+    }
+    
     override func didMove(to view: SKView) {
         super.didMove(to: view)
         self.physicsWorld.contactDelegate = self
@@ -543,6 +548,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 //        setupTraps()
         setupFinishLine()
         setupPlayer()
+        applyCurrentRoundSkinToPlayer()
         setupTimerLabel()
         setupUI()
         setupMultiplayer()
@@ -555,6 +561,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         guard let gameState = gameState else { return }
         
         currentRoundConfig = gameState.currentRoundConfig
+        
+        applyCurrentRoundSkinToPlayer()
         
         // Remove background
         enumerateChildNodes(withName: "//Background") { node, _ in
@@ -597,6 +605,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
            let startPos = generatedLevel?.startPositions.first {
             node.position = startPos
             node.physicsBody?.velocity = .zero
+            
+            node.removeAction(forKey: "playerAnimation")
+        }
+        
+        if let locomotion = player?.component(ofType: LocomotionComponent.self) {
+            locomotion.stateMachine.enter(IdleState.self)
+        }
+        
+        if let status = player?.component(ofType: StatusComponent.self) {
+            status.stateMachine.enter(NormalState.self)
         }
         
         timerLabel.reset()
