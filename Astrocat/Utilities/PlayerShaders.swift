@@ -8,10 +8,10 @@
 import SpriteKit
 
 enum CatColorVariant: Int, CaseIterable {
-    case white  = 0   // no hue shift, desaturated
-    case gray   = 1   // no hue shift, desaturated darker
-    case orange = 2   // warm hue shift
-    case alien  = 3   // green hue shift
+    case white  = 0
+    case orange = 1
+    case blue   = 2
+    case alien  = 3
     
     func makeShader() -> SKShader {
         let src = """
@@ -32,15 +32,15 @@ enum CatColorVariant: Int, CaseIterable {
             ]
         case .gray:
             shader.uniforms = [
-                SKUniform(name: "u_tint_r", float: 0.6),
-                SKUniform(name: "u_tint_g", float: 0.6),
-                SKUniform(name: "u_tint_b", float: 0.6),
-            ]
-        case .orange:
-            shader.uniforms = [
                 SKUniform(name: "u_tint_r", float: 1.0),
                 SKUniform(name: "u_tint_g", float: 0.5),
                 SKUniform(name: "u_tint_b", float: 0.1),
+            ]
+        case .orange:
+            shader.uniforms = [
+                SKUniform(name: "u_tint_r", float: 0.2),
+                SKUniform(name: "u_tint_g", float: 0.6),
+                SKUniform(name: "u_tint_b", float: 1.0),
             ]
         case .alien:
             shader.uniforms = [
