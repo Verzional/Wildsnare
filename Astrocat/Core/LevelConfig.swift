@@ -28,6 +28,15 @@ struct LevelConfig {
     let electricCoilCount: Int
     let cometDustCount: Int
     
+    // Grid layout
+    var gridCellWidth: CGFloat {
+        mapWidth / CGFloat(gridColumns)
+    }
+    
+    var gridRowHeight: CGFloat {
+        finishLineY / CGFloat(gridRows + 2)
+    }
+    
     static let defaultConfig = LevelConfig(
         mapWidth: 2500,
         finishLineY: 5000,

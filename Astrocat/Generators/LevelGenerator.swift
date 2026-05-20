@@ -64,14 +64,6 @@ class LevelGenerator {
         config.gridColumns - 1
     }
     
-    private var gridCellWidth: CGFloat {
-        config.mapWidth / CGFloat(config.gridColumns)
-    }
-    
-    private var gridRowHeight: CGFloat {
-        config.finishLineY / CGFloat(config.gridRows + 2)
-    }
-    
     init(config: LevelConfig, seed: UInt64) {
         self.config = config
         self.randomSource = GKLinearCongruentialRandomSource(seed: seed)
@@ -139,7 +131,7 @@ class LevelGenerator {
     private func generateBackbone(from entry: PlatformCell, allCells: inout [PlatformCell]) -> [PlatformCell] {
         var cells: [PlatformCell] = []
         
-        let maxRow = config.gridRows - 1
+        let maxRow = config.gridRows - 2
         var currentCol = entry.column
         var previousCell = entry
         var consecutiveSameColumn = 0
@@ -316,7 +308,7 @@ class LevelGenerator {
     
     private func generateDecorations(allCells: inout [PlatformCell]) -> [PlatformCell] {
         var decorations: [PlatformCell] = []
-        let maxRow = config.gridRows - 1
+        let maxRow = config.gridRows - 2
         
         // Store all column in that row
         var columnsOnRow: [Int: Set<Int>] = [:]
@@ -432,11 +424,11 @@ class LevelGenerator {
         let dx = abs(nextPos.x - prevPos.x)
         
         if rowGap == 0 {
-            return dx <= gridCellWidth * 2.0
+            return dx <= config.gridCellWidth * 2.0
         }
         
         if rowGap == 1 {
-            return dx <= gridCellWidth * 1.5
+            return dx <= config.gridCellWidth * 1.5
         }
         
         return false
@@ -454,7 +446,7 @@ class LevelGenerator {
         var offX = nextRandom(in: -offsetRange...offsetRange)
         let offY = nextRandom(in: -8...8)
         
-        let rawX = CGFloat(clampedCol) * gridCellWidth + gridCellWidth / 2 + offX
+        let rawX = CGFloat(clampedCol) * config.gridCellWidth + config.gridCellWidth / 2 + offX
         let margin = config.platformSize.width / 2 + 20
         let minX = margin
         let maxX = config.mapWidth - margin
@@ -477,8 +469,8 @@ class LevelGenerator {
     }
     
     private func worldPosition(for cell: PlatformCell) -> CGPoint {
-        let x = CGFloat(cell.column) * gridCellWidth + gridCellWidth / 2 + cell.offsetX
-        let y = config.startY + CGFloat(cell.row) * gridRowHeight + cell.offsetY
+        let x = CGFloat(cell.column) * config.gridCellWidth + config.gridCellWidth / 2 + cell.offsetX
+        let y = config.startY + CGFloat(cell.row) * config.gridRowHeight + cell.offsetY
         return CGPoint(x: x, y: y)
     }
     

@@ -14,7 +14,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var graphs = [String : GKGraph]()
     
     private var lastUpdateTime: TimeInterval = 0
+    
+    // Camera
     private let mainCamera = SKCameraNode()
+    var mainCameraNode: SKCameraNode { return mainCamera }
     
     private let levelConfig = LevelConfig.defaultConfig
     private var generatedLevel: GeneratedLevel?
@@ -113,6 +116,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         return player?.component(ofType: InputComponent.self)
     }
     
+    // Race
+    var gameState: GameStateComponent?
+    var isPlayerInputEnabled = false
+    let timerLabel = RaceTimerNode()
+    
     // MARK: - Setup
     private func setupCamera() {
         addChild(mainCamera)
@@ -201,10 +209,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         jumpButton.zPosition = 4
         
         joystick.onDirectionChange = { [weak self] direction in
+            guard self?.isPlayerInputEnabled == true else { return }
             self?.playerInput?.joystickDirection = direction
         }
         
         jumpButton.onTap = { [weak self] in
+            guard self?.isPlayerInputEnabled == true else { return }
             self?.playerInput?.wantsToJump = true
         }
         
@@ -323,9 +333,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             spawnPlatformEntity(platform)
         }
         
-        for trap in level.traps {
-            spawnTrapEntity(trap)
-        }
+//        for trap in level.traps {
+//            spawnTrapEntity(trap)
+//        }
     }
     
     private func spawnPlatformEntity(_ data: GeneratedPlatform) {
@@ -420,39 +430,36 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         gridNode.name = "DebugGrid"
         gridNode.zPosition = -5
 
-        let cellWidth = levelConfig.mapWidth / CGFloat(levelConfig.gridColumns)
-        let rowHeight = levelConfig.finishLineY / CGFloat(levelConfig.gridRows + 2)
-
         // Vertical column lines
         for column in 0...levelConfig.gridColumns {
-            let x = CGFloat(column) * cellWidth
+            let x = CGFloat(column) * levelConfig.gridCellWidth
 
             let path = CGMutablePath()
             path.move(to: CGPoint(x: x, y: levelConfig.startY))
             path.addLine(to: CGPoint(x: x, y: levelConfig.finishLineY))
 
             let line = SKShapeNode(path: path)
-            line.strokeColor = .cyan.withAlphaComponent(0.35)
+            line.strokeColor = .cyan.withAlphaComponent(0.75)
             line.lineWidth = 1
             gridNode.addChild(line)
         }
 
         // Horizontal row lines
         for row in 0...levelConfig.gridRows {
-            let y = levelConfig.startY + CGFloat(row) * rowHeight
+            let y = levelConfig.startY + CGFloat(row) * levelConfig.gridRowHeight
 
             let path = CGMutablePath()
             path.move(to: CGPoint(x: 0, y: y))
             path.addLine(to: CGPoint(x: levelConfig.mapWidth, y: y))
 
             let line = SKShapeNode(path: path)
-            line.strokeColor = .yellow.withAlphaComponent(0.25)
+            line.strokeColor = .yellow.withAlphaComponent(0.75)
             line.lineWidth = 1
             gridNode.addChild(line)
         }
 
         for column in 0..<levelConfig.gridColumns {
-            let x = CGFloat(column) * cellWidth + cellWidth / 2
+            let x = CGFloat(column) * levelConfig.gridCellWidth + levelConfig.gridCellWidth / 2
 
             let path = CGMutablePath()
             path.move(to: CGPoint(x: x, y: levelConfig.startY))
@@ -465,6 +472,47 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
 
         addChild(gridNode)
+    }
+    
+    private func setupTimerLabel() {
+        mainCamera.addChild(timerLabel)
+    }
+    
+    private func setupFinishLine() {
+        let finishY = levelConfig.finishLineY - levelConfig.gridRowHeight * 2
+        
+        let container = SKNode()
+        container.name = "FinishLine"
+        container.position = CGPoint(x: levelConfig.mapWidth / 2, y: finishY)
+        container.zPosition = 2
+        
+        let texture = SKTexture(imageNamed: "FinishLine")
+        texture.filteringMode = .nearest
+        
+        let tileSize = CGSize(width: 256, height: 28)
+        let tileCount = Int(ceil(levelConfig.mapWidth / tileSize.width))
+        
+        for i in 0..<tileCount {
+            let tile = SKSpriteNode(texture: texture)
+            tile.size = tileSize
+            tile.position = CGPoint(
+                x: CGFloat(i) * tileSize.width + tileSize.width / 2 - levelConfig.mapWidth / 2,
+                y: 0
+            )
+            
+            tile.texture?.filteringMode = .nearest
+            container.addChild(tile)
+        }
+        
+        container.physicsBody = SKPhysicsBody(
+            rectangleOf: CGSize(width: levelConfig.mapWidth, height: tileSize.height)
+        )
+        container.physicsBody?.isDynamic = false
+        container.physicsBody?.categoryBitMask = PhysicsCategory.finish
+        container.physicsBody?.contactTestBitMask = PhysicsCategory.player
+        container.physicsBody?.collisionBitMask = PhysicsCategory.none
+        
+        addChild(container)
     }
     
     private func removeSksTestArea() {
@@ -482,10 +530,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupDebugGrid()
         setupLevel()
 //        setupTraps()
+        setupFinishLine()
         setupPlayer()
+        setupTimerLabel()
         setupUI()
         setupMultiplayer()
         
+        // Start race
+        gameState = GameStateComponent(scene: self)
+        gameState?.stateMachine.enter(CountdownState.self)
     }
     
     // MARK: - Update
@@ -556,6 +609,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let dt = currentTime - lastUpdateTime
         
         updateOneWayPlatformCollision()
+        
+        gameState?.stateMachine.update(deltaTime: dt)
         blackHoleSystem.update(deltaTime: dt)
         movementSystem.update(deltaTime: dt)
         cameraSystem.update(deltaTime: dt)
@@ -581,6 +636,9 @@ extension GameScene {
             handleContact(playerNode: playerNode, trapNode: trapNode)
         }
         
+        if contactMask == (PhysicsCategory.player | PhysicsCategory.finish) {
+            gameState?.stateMachine.enter(RoundOverState.self)
+        }
     }
     
     private func handleContact(playerNode: SKNode?, trapNode: SKNode?) {
