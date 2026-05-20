@@ -53,7 +53,7 @@ class RemotePlayerEntity: GKEntity {
     func updatePosition(x: CGFloat, y: CGFloat, dx: CGFloat, dy: CGFloat) {
             // Movement interpolation
         node.removeAction(forKey: "remoteMove")
-        node.run(SKAction.move(to: CGPoint(x: x, y: y), duration: 0.06), withKey: "remoteMove")
+        node.run(SKAction.move(to: CGPoint(x: x, y: y), duration: 0.1), withKey: "remoteMove")
         
             // Facing direction
         if dx != 0 {
