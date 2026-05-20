@@ -63,7 +63,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 let name = message.playerName ?? "Player"
                 
                 // Remote player colors
-                let coloredVariants: [CatColorVariant] = [.gray, .orange, .alien]
+                let coloredVariants: [CatColorVariant] = [.orange, .blue, .alien]
                 let variant = coloredVariants[remotePlayers.count % coloredVariants.count]
                 
                 let entity = RemotePlayerEntity(
