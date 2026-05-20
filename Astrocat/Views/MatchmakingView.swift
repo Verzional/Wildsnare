@@ -81,7 +81,6 @@ struct MatchmakingView: View {
 }
 
 // MARK: - Reusable Pixel-Style Button
-
 struct AstroCatButton: View {
     let title: String
     let action: () -> Void

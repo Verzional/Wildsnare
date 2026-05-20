@@ -62,8 +62,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if self.remotePlayers[id] == nil {
                 let name = message.playerName ?? "Player"
                 
-                let variantIndex = abs(id.hashValue) % CatColorVariant.allCases.count
-                let variant = CatColorVariant(rawValue: variantIndex) ?? .orange
+                // Remote player colors
+                let coloredVariants: [CatColorVariant] = [.gray, .orange, .alien]
+                let variant = coloredVariants[remotePlayers.count % coloredVariants.count]
                 
                 let entity = RemotePlayerEntity(
                     scene: self,

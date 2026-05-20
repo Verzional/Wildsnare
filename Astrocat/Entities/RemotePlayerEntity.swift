@@ -5,7 +5,7 @@ class RemotePlayerEntity: GKEntity {
     let node: SKSpriteNode
     private let nameLabel: SKLabelNode
     
-        // Cache animations so atlases are only loaded once
+    // Cache animations so atlases are only loaded once
     private lazy var idleAnimation: SKAction = {
         SKAction.buildAnimation(atlasName: "N-Idle", prefix: "NI")
     }()
@@ -16,11 +16,11 @@ class RemotePlayerEntity: GKEntity {
         SKAction.buildAnimation(atlasName: "N-Jump", prefix: "NJ")
     }()
     
-        // Track current state to avoid restarting the same animation every frame
+    // Track current state to avoid restarting the same animation every frame
     private var currentAnimationKey: String = ""
     
     init(scene: SKScene, colorVariant: CatColorVariant, displayName: String) {
-            // Use first idle frame as initial texture — avoids blank sprite on spawn
+        // Use first idle frame as initial texture — avoids blank sprite on spawn
         let idleAtlas = SKTextureAtlas(named: "N-Idle")
         let firstFrame = idleAtlas.textureNamed("NI-Frame-1")
         
@@ -42,7 +42,7 @@ class RemotePlayerEntity: GKEntity {
         node.addChild(nameLabel)
         scene.addChild(node)
         
-            // Start with idle
+        // Start with idle
         playAnimation(idleAnimation, key: "idle")
     }
     
@@ -51,17 +51,17 @@ class RemotePlayerEntity: GKEntity {
     }
     
     func updatePosition(x: CGFloat, y: CGFloat, dx: CGFloat, dy: CGFloat) {
-            // Movement interpolation
+        // Movement interpolation
         node.removeAction(forKey: "remoteMove")
         node.run(SKAction.move(to: CGPoint(x: x, y: y), duration: 0.1), withKey: "remoteMove")
         
-            // Facing direction
+        // Facing direction
         if dx != 0 {
             node.xScale = dx > 0 ? abs(node.xScale) : -abs(node.xScale)
             nameLabel.xScale = dx > 0 ? 1 : -1
         }
         
-            // Animation state — inferred from velocity
+        // Animation state — inferred from velocity
         let isAirborne = dy > 50 || dy < -50
         let isMoving = abs(dx) > 10
         
@@ -75,7 +75,7 @@ class RemotePlayerEntity: GKEntity {
     }
     
     private func playAnimation(_ animation: SKAction, key: String) {
-        guard currentAnimationKey != key else { return }  // don't restart same anim
+        guard currentAnimationKey != key else { return }
         currentAnimationKey = key
         node.run(animation, withKey: "playerAnimation")
     }
