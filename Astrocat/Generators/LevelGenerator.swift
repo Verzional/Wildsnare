@@ -110,14 +110,31 @@ class LevelGenerator {
         }
         
         let playerHalfHeight: CGFloat = 32 // 64x64
-        let floorTopY = config.startY + config.floorSize.height / 2
         
-        let startPositions = [
-            CGPoint(
-                x: config.mapWidth / 2,
-                y: floorTopY + playerHalfHeight + 2
-            )
-        ]
+        let debugStartAtTop = false
+        
+        let startPositions: [CGPoint]
+        
+        if debugStartAtTop,
+           let topCell = allCells.max(by: { $0.row < $1.row }) {
+            let topPlatformPosition = worldPosition(for: topCell)
+            
+            startPositions = [
+                CGPoint(
+                    x: topPlatformPosition.x,
+                    y: topPlatformPosition.y + config.platformSize.height / 2 + playerHalfHeight + 8
+                )
+            ]
+        } else {
+            let floorTopY = config.startY + config.floorSize.height / 2
+            
+            startPositions = [
+                CGPoint(
+                    x: config.mapWidth / 2,
+                    y: floorTopY + playerHalfHeight + 2
+                )
+            ]
+        }
         
         return GeneratedLevel(
             platforms: platforms,

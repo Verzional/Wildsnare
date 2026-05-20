@@ -333,9 +333,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             spawnPlatformEntity(platform)
         }
         
-//        for trap in level.traps {
-//            spawnTrapEntity(trap)
-//        }
+        for trap in level.traps {
+            spawnTrapEntity(trap)
+        }
     }
     
     private func spawnPlatformEntity(_ data: GeneratedPlatform) {
@@ -539,6 +539,48 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Start race
         gameState = GameStateComponent(scene: self)
         gameState?.stateMachine.enter(CountdownState.self)
+    }
+    
+    // MARK: - Round
+    func resetForNextRound() {
+        // Remove platforms
+        enumerateChildNodes(withName: "//Platform") { node, _ in
+            node.removeFromParent()
+        }
+        
+        // Remove traps
+        for entity in entities {
+            if entity is PlatformEntity || entity is TrapEntity {
+                entity.component(ofType: GKSKNodeComponent.self)?.node.removeFromParent()
+            }
+        }
+        
+        // Remove finish line
+        childNode(withName: "//FinishLine")?.removeFromParent()
+        
+        // Clear non-player entities
+        entities.removeAll { !($0 is PlayerEntity) }
+        
+        // Clear trap systems
+        blackHoleSystem = GKComponentSystem(componentClass: BlackHoleSystem.self)
+        electricCoilSystem = GKComponentSystem(componentClass: ElectricCoilSystem.self)
+        purpleSlimeSystem = GKComponentSystem(componentClass: PurpleSlimeSystem.self)
+        forceFieldSystem = GKComponentSystem(componentClass: ForceFieldSystem.self)
+        cometDustSystem = GKComponentSystem(componentClass: CometDustSystem.self)
+        
+        // Generate seed for new level
+        levelSeed = UInt64(Date().timeIntervalSince1970)
+        setupLevel()
+        setupFinishLine()
+        
+        // Reset player
+        if let node = player?.component(ofType: GKSKNodeComponent.self)?.node,
+           let startPos = generatedLevel?.startPositions.first {
+            node.position = startPos
+            node.physicsBody?.velocity = .zero
+        }
+        
+        timerLabel.reset()
     }
     
     // MARK: - Update
