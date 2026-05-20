@@ -105,7 +105,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     
     func localPlayerFinished(time: TimeInterval){
         let localID = GKLocalPlayer.local.gamePlayerID
-        let localName = GKLocalPlayer.local.alias
+        _ = GKLocalPlayer.local.alias
         playerTimes[localID] = time
         
         let msg = GameMessage.playerFinished(senderID: localID, finishTime: time)
