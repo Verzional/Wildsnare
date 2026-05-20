@@ -61,11 +61,6 @@ class RemotePlayerEntity: GKEntity {
             nameLabel.xScale = dx > 0 ? 1 : -1
         }
         
-            // Tilt
-        let tilt: CGFloat = dy > 50 ? -5 : (dy < -50 ? 5 : 0)
-        node.removeAction(forKey: "remoteTilt")
-        node.run(SKAction.rotate(toAngle: tilt * (.pi / 180), duration: 0.06), withKey: "remoteTilt")
-        
             // Animation state — inferred from velocity
         let isAirborne = dy > 50 || dy < -50
         let isMoving = abs(dx) > 10
