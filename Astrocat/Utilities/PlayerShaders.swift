@@ -30,13 +30,13 @@ enum CatColorVariant: Int, CaseIterable {
                 SKUniform(name: "u_tint_g", float: 1.0),
                 SKUniform(name: "u_tint_b", float: 1.0),
             ]
-        case .gray:
+        case .orange:
             shader.uniforms = [
                 SKUniform(name: "u_tint_r", float: 1.0),
                 SKUniform(name: "u_tint_g", float: 0.5),
                 SKUniform(name: "u_tint_b", float: 0.1),
             ]
-        case .orange:
+        case .blue:
             shader.uniforms = [
                 SKUniform(name: "u_tint_r", float: 0.2),
                 SKUniform(name: "u_tint_g", float: 0.6),
