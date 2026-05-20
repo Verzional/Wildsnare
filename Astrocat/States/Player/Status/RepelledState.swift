@@ -6,6 +6,7 @@
 //
 
 import GameplayKit
+import SpriteKit
 
 class RepelledState: GKState {
     unowned let statusComp: StatusComponent

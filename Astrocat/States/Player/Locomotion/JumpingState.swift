@@ -32,6 +32,18 @@ class JumpingState: GKState {
         let jumpAnimation = SKAction.playerAnimation(skinPrefix: locomotionComponent.skinPrefix, animation: .jump)
         
         sprite.run(jumpAnimation, withKey: "playerAnimation")
+        
+        if let url = Bundle.main.url(forResource: "Jump", withExtension: "mp3") {
+            let sound = SKAudioNode(url: url)
+            sound.name = "locomotionSound"
+            sound.autoplayLooped = false
+            sprite.addChild(sound)
+            sound.run(SKAction.play())
+        }
+    }
+    
+    override func willExit(to nextState: GKState) {
+        locomotionComponent.entity?.component(ofType: GKSKNodeComponent.self)?.node.childNode(withName: "locomotionSound")?.removeFromParent()
     }
 
     override func update(deltaTime seconds: TimeInterval) {

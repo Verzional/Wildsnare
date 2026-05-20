@@ -6,6 +6,7 @@
 //
 
 import GameplayKit
+import SpriteKit
 
 class StunnedState: GKState {
     unowned let statusComp: StatusComponent
@@ -30,7 +31,19 @@ class StunnedState: GKState {
             return
         }
         
-        sprite.run(stunnedAnimation, withKey: "playerAnimation")
+        
+        let url = Bundle.main.url(forResource: "ElectricCoil", withExtension: "mp3")
+        if let url = url {
+            let sound = SKAudioNode(url: url)
+            sound.name = "statusSound"
+            sound.autoplayLooped = false
+            sprite.addChild(sound)
+            sound.run(SKAction.play())
+        }
+    }
+    
+    override func willExit(to nextState: GKState) {
+        statusComp.entity?.component(ofType: GKSKNodeComponent.self)?.node.childNode(withName: "statusSound")?.removeFromParent()
     }
     
     override func update(deltaTime seconds: TimeInterval) {
