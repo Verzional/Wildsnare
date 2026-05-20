@@ -13,10 +13,6 @@ class SlowedDownState: GKState {
     var duration: TimeInterval = 0
     var modifier: CGFloat = 0.5
     
-    lazy var slimedAnimation: SKAction = {
-        return SKAction.buildAnimation(atlasName: "N-Slimed", prefix: "NS")
-    }()
-    
     init(component: StatusComponent) {
         self.statusComp = component
         super.init()
@@ -30,6 +26,8 @@ class SlowedDownState: GKState {
               let sprite = nodeComponent.node as? SKSpriteNode else {
             return
         }
+        
+        let slimedAnimation = SKAction.playerAnimation(skinPrefix: statusComp.skinPrefix, animation: .slimed)
         
         sprite.run(slimedAnimation, withKey: "playerAnimation")
     }

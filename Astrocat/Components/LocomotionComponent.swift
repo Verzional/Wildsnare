@@ -9,6 +9,7 @@ import GameplayKit
 
 class LocomotionComponent: GKComponent {
     var stateMachine: GKStateMachine!
+    var skinPrefix: String = "N"
     
     override init() {
         super.init()
