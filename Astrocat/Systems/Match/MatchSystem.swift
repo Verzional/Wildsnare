@@ -197,11 +197,33 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     }
     
     func sendPlayerUpdate(_ message: GameMessage) {
-        send(message, with: .unreliable)
+        guard let match = match,
+              let x = message.playerX, let y = message.playerY,
+              let dx = message.playerDX, let dy = message.playerDY else { return }
+        
+        let packet = PositionPacket(x: Float(x), y: Float(y), dx: Float(dx), dy: Float(dy))
+        let data = packet.toData()
+        try? match.sendData(toAllPlayers: data, with: .unreliable)
     }
     
     // MARK: GKMatchDelegate
     nonisolated func match(_ match: GKMatch, didReceive data: Data, fromRemotePlayer player: GKPlayer){
+        
+        if data.first == 1, let packet = PositionPacket.from(data) {
+            let msg = GameMessage(
+                messageType: .playerUpdate,
+                senderID: player.gamePlayerID,
+                playerName: nil,
+                playerX: CGFloat(packet.x),
+                playerY: CGFloat(packet.y),
+                playerDX: CGFloat(packet.dx),
+                playerDY: CGFloat(packet.dy)
+            )
+            Task { @MainActor in
+                self.onPlayerUpdateReceived?(msg)
+            }
+            return
+        }
         
         Task {
             @MainActor in
@@ -303,6 +325,24 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             
             matchState = .inLobby
             startReadyHeartbeat()
+        }
+    }
+    private struct PositionPacket {
+        var type: UInt8 = 1
+        var x: Float
+        var y: Float
+        var dx: Float
+        var dy: Float
+        
+        func toData() -> Data {
+            var copy = self
+            return Data(bytes: &copy, count: MemoryLayout<PositionPacket>.size)
+        }
+        
+        static func from(_ data: Data) -> PositionPacket? {
+            guard data.count >= MemoryLayout<PositionPacket>.size,
+                  data[0] == 1 else { return nil }
+            return data.withUnsafeBytes { $0.loadUnaligned(as: PositionPacket.self) }
         }
     }
     

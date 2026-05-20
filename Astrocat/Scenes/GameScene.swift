@@ -47,6 +47,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var matchSystem: MatchSystem?
     var onGameFinished: (([RaceResult]) -> Void)?
     
+    private var lastBroadcastTime: TimeInterval = 0
+    private let broadcastInterval: TimeInterval = 1.0 / 20.0  // 20Hz
+    
     private func setupMultiplayer() {
         guard let matchSystem = matchSystem else { return }
         
@@ -546,18 +549,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         body.collisionBitMask = collisionMask
     }
     
+        // AFTER
     override func update(_ currentTime: TimeInterval) {
         if lastUpdateTime == 0 { lastUpdateTime = currentTime }
         let dt = currentTime - lastUpdateTime
         
         updateOneWayPlatformCollision()
-
         blackHoleSystem.update(deltaTime: dt)
         movementSystem.update(deltaTime: dt)
         cameraSystem.update(deltaTime: dt)
         stateSystem.update(deltaTime: dt)
         
-        broadcastLocalPosition()
+        if currentTime - lastBroadcastTime >= broadcastInterval {
+            broadcastLocalPosition()
+            lastBroadcastTime = currentTime
+        }
         
         lastUpdateTime = currentTime
     }
