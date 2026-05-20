@@ -1,19 +1,30 @@
-//
-//  RemotePlayerEntity.swift
-//  Astrocat
-//
-//  Created by Arya on 18/05/26.
-//
-
 import SpriteKit
 import GameplayKit
 
 class RemotePlayerEntity: GKEntity {
     let node: SKSpriteNode
-    private let nameLabel: SKLabelNode 
+    private let nameLabel: SKLabelNode
+    
+        // Cache animations so atlases are only loaded once
+    private lazy var idleAnimation: SKAction = {
+        SKAction.buildAnimation(atlasName: "N-Idle", prefix: "NI")
+    }()
+    private lazy var runAnimation: SKAction = {
+        SKAction.buildAnimation(atlasName: "N-Run", prefix: "NR")
+    }()
+    private lazy var jumpAnimation: SKAction = {
+        SKAction.buildAnimation(atlasName: "N-Jump", prefix: "NJ")
+    }()
+    
+        // Track current state to avoid restarting the same animation every frame
+    private var currentAnimationKey: String = ""
     
     init(scene: SKScene, colorVariant: CatColorVariant, displayName: String) {
-        node = SKSpriteNode(imageNamed: "//Player")
+            // Use first idle frame as initial texture — avoids blank sprite on spawn
+        let idleAtlas = SKTextureAtlas(named: "N-Idle")
+        let firstFrame = idleAtlas.textureNamed("NI-Frame-1")
+        
+        node = SKSpriteNode(texture: firstFrame)
         node.setScale(1.0)
         node.zPosition = 1
         node.texture?.filteringMode = .nearest
@@ -30,6 +41,9 @@ class RemotePlayerEntity: GKEntity {
         super.init()
         node.addChild(nameLabel)
         scene.addChild(node)
+        
+            // Start with idle
+        playAnimation(idleAnimation, key: "idle")
     }
     
     required init?(coder: NSCoder) {
@@ -37,19 +51,38 @@ class RemotePlayerEntity: GKEntity {
     }
     
     func updatePosition(x: CGFloat, y: CGFloat, dx: CGFloat, dy: CGFloat) {
+            // Movement interpolation
         node.removeAction(forKey: "remoteMove")
-        let move = SKAction.move(to: CGPoint(x: x, y: y), duration: 0.06)
-        node.run(move, withKey: "remoteMove")
+        node.run(SKAction.move(to: CGPoint(x: x, y: y), duration: 0.06), withKey: "remoteMove")
         
+            // Facing direction
         if dx != 0 {
             node.xScale = dx > 0 ? abs(node.xScale) : -abs(node.xScale)
             nameLabel.xScale = dx > 0 ? 1 : -1
         }
         
+            // Tilt
         let tilt: CGFloat = dy > 50 ? -5 : (dy < -50 ? 5 : 0)
         node.removeAction(forKey: "remoteTilt")
-        let rotate = SKAction.rotate(toAngle: tilt * (.pi / 180), duration: 0.06)
-        node.run(rotate, withKey: "remoteTilt")
+        node.run(SKAction.rotate(toAngle: tilt * (.pi / 180), duration: 0.06), withKey: "remoteTilt")
+        
+            // Animation state — inferred from velocity
+        let isAirborne = dy > 50 || dy < -50
+        let isMoving = abs(dx) > 10
+        
+        if isAirborne {
+            playAnimation(jumpAnimation, key: "jump")
+        } else if isMoving {
+            playAnimation(runAnimation, key: "run")
+        } else {
+            playAnimation(idleAnimation, key: "idle")
+        }
+    }
+    
+    private func playAnimation(_ animation: SKAction, key: String) {
+        guard currentAnimationKey != key else { return }  // don't restart same anim
+        currentAnimationKey = key
+        node.run(animation, withKey: "playerAnimation")
     }
     
     func removeFromScene() {
