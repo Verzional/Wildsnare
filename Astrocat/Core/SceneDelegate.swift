@@ -20,14 +20,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = scene as? UIWindowScene else { return }
         window = UIWindow(windowScene: windowScene)
         
+        let splashVC = UIHostingController(
+            rootView: SplashScreenView { [weak self] in
+                self?.showMatchmakingScreen()
+            }
+        )
+
+        window?.rootViewController = splashVC
+        window?.makeKeyAndVisible()
+    }
+
+    private func showMatchmakingScreen() {
+        guard let window else { return }
+
         let hostingVC = UIHostingController(rootView: MatchmakingView().environmentObject(matchSystem))
-        
+
         matchSystem.onStartSolo = { [weak hostingVC] in
             let gameVC = GameViewController()
             gameVC.modalPresentationStyle = .fullScreen
             hostingVC?.present(gameVC, animated: true)
         }
-        
+
         matchSystem.onPresentViewController = { [weak hostingVC] vc in
             hostingVC?.present(vc, animated: true)
         }
@@ -40,10 +53,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             gameVC.levelSeed = self.matchSystem.randomSeed
             hostingVC?.present(gameVC, animated: true)
         }
-        
-        window?.rootViewController = hostingVC
-        window?.makeKeyAndVisible()
-        matchSystem.authenticateUser()
+
+        UIView.transition(with: window, duration: 0.35, options: .transitionCrossDissolve, animations: {
+            window.rootViewController = hostingVC
+        }) { _ in
+            self.matchSystem.authenticateUser()
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
