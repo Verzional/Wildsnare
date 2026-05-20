@@ -13,6 +13,11 @@ class GameStateComponent {
     var currentRound: Int = 1
     var totalRounds: Int = 3
     
+    var currentRoundConfig: RoundConfig {
+        let index = min(currentRound - 1, RoundConfig.allRounds.count - 1)
+        return RoundConfig.allRounds[index]
+    }
+    
     var isLastRound: Bool {
         currentRound >= totalRounds
     }
