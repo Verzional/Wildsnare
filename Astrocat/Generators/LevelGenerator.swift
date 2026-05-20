@@ -10,7 +10,6 @@ import GameplayKit
 
 struct GeneratedPlatform {
     let position: CGPoint
-    let textureName: String
     let type: PlatformType
 }
 
@@ -104,7 +103,6 @@ class LevelGenerator {
             }
             return GeneratedPlatform(
                 position: worldPosition(for: cell),
-                textureName: "PlatformEarth",
                 type: type
             )
         }
@@ -512,7 +510,6 @@ class LevelGenerator {
     private func createPlatform(from cell: PlatformCell, type: PlatformType) -> GeneratedPlatform {
         GeneratedPlatform(
             position: worldPosition(for: cell),
-            textureName: "PlatformEarth",
             type: type
         )
     }

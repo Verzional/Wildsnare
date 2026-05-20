@@ -45,6 +45,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var forceFieldSystem = GKComponentSystem(componentClass: ForceFieldSystem.self)
     var cometDustSystem = GKComponentSystem(componentClass: CometDustSystem.self)
     
+    // Race
+    var gameState: GameStateComponent?
+    var isPlayerInputEnabled = false
+    let timerLabel = RaceTimerNode()
+    var currentRoundConfig: RoundConfig = .earth
+    
     // Multiplayer Systems
     var remotePlayers: [String: RemotePlayerEntity] = [:]
     var matchSystem: MatchSystem?
@@ -116,11 +122,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         return player?.component(ofType: InputComponent.self)
     }
     
-    // Race
-    var gameState: GameStateComponent?
-    var isPlayerInputEnabled = false
-    let timerLabel = RaceTimerNode()
-    
     // MARK: - Setup
     private func setupCamera() {
         addChild(mainCamera)
@@ -136,7 +137,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     private func setupBackground() {
-        let background = SKSpriteNode(imageNamed: "MapEarth")
+        let background = SKSpriteNode(imageNamed: currentRoundConfig.backgroundTexture)
+        background.name = "Background"
+        
         background.position = CGPoint(
             x: levelConfig.mapWidth / 2,
             y: levelConfig.finishLineY / 2 - 30
@@ -339,7 +342,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     private func spawnPlatformEntity(_ data: GeneratedPlatform) {
-        let node = SKSpriteNode(imageNamed: data.textureName)
+        let node = SKSpriteNode(imageNamed: currentRoundConfig.platformTexture)
         node.position = data.position
         node.size = levelConfig.platformSize
         node.name = "Platform"
@@ -522,6 +525,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func didMove(to view: SKView) {
         super.didMove(to: view)
         self.physicsWorld.contactDelegate = self
+        
+        // Start race
+        gameState = GameStateComponent(scene: self)
+        
+        if let gameState = gameState {
+            currentRoundConfig = gameState.currentRoundConfig
+        }
+        
         removeSksTestArea()
         setupCamera()
         setupBackground()
@@ -536,13 +547,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupUI()
         setupMultiplayer()
         
-        // Start race
-        gameState = GameStateComponent(scene: self)
         gameState?.stateMachine.enter(CountdownState.self)
     }
     
     // MARK: - Round
     func resetForNextRound() {
+        guard let gameState = gameState else { return }
+        
+        currentRoundConfig = gameState.currentRoundConfig
+        
+        // Remove background
+        enumerateChildNodes(withName: "//Background") { node, _ in
+            node.removeFromParent()
+        }
+        
         // Remove platforms
         enumerateChildNodes(withName: "//Platform") { node, _ in
             node.removeFromParent()
@@ -570,6 +588,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Generate seed for new level
         levelSeed = UInt64(Date().timeIntervalSince1970)
+        setupBackground()
         setupLevel()
         setupFinishLine()
         
