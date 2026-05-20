@@ -11,10 +11,6 @@ import SpriteKit
 class IdleState: GKState {
     unowned let locomotionComponent: LocomotionComponent
     
-    lazy var idleAnimation: SKAction = {
-        return SKAction.buildAnimation(atlasName: "N-Idle", prefix: "NI")
-    }()
-    
     init(component: LocomotionComponent) {
         self.locomotionComponent = component
         super.init()
@@ -30,6 +26,8 @@ class IdleState: GKState {
               let sprite = nodeComponent.node as? SKSpriteNode else {
             return
         }
+        
+        let idleAnimation = SKAction.playerAnimation(skinPrefix: locomotionComponent.skinPrefix, animation: .idle)
         
         sprite.run(idleAnimation, withKey: "playerAnimation")
     }
