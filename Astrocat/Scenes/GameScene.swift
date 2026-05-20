@@ -437,7 +437,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             gridNode.addChild(line)
         }
 
-        nonisolated func matchmakerViewController(
         for column in 0..<levelConfig.gridColumns {
             let x = CGFloat(column) * cellWidth + cellWidth / 2
 
