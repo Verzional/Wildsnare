@@ -12,7 +12,7 @@ class RemotePlayerEntity: GKEntity {
     let node: SKSpriteNode
     
     init(scene: SKScene) {
-        node = SKSpriteNode(imageNamed: "Player")
+        node = SKSpriteNode(imageNamed: "//Player")
         node.setScale(1.0)
         node.zPosition = 1
         
