@@ -6,6 +6,7 @@
 //
 
 import GameplayKit
+import SpriteKit
 
 class NormalState: GKState {
     unowned let statusComp: StatusComponent

@@ -24,6 +24,18 @@ class ObscuredState: GKState {
            let overlay = camera.childNode(withName: "DustOverlay") {
             overlay.run(SKAction.fadeIn(withDuration: 0.2))
         }
+        
+        if let nodeComponent = statusComp.entity?.component(ofType: GKSKNodeComponent.self),
+           let sprite = nodeComponent.node as? SKSpriteNode {
+            if let url = Bundle.main.url(forResource: "CometDust", withExtension: "mp3") {
+                let sound = SKAudioNode(url: url)
+                sound.name = "statusSound"
+                sound.autoplayLooped = false
+                sprite.addChild(sound)
+                sound.run(SKAction.play())
+            }
+        }
+        
         print("Start Comet Dust Animation")
     }
     
@@ -40,6 +52,8 @@ class ObscuredState: GKState {
            let overlay = camera.childNode(withName: "DustOverlay") {
             overlay.run(SKAction.fadeOut(withDuration: 0.5))
         }
+        
+        statusComp.entity?.component(ofType: GKSKNodeComponent.self)?.node.childNode(withName: "statusSound")?.removeFromParent()
     }
     
     func reset() {

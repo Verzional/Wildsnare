@@ -32,5 +32,17 @@ class IdleState: GKState {
         let idleAnimation = SKAction.playerAnimation(skinPrefix: locomotionComponent.skinPrefix, animation: .idle)
         
         sprite.run(idleAnimation, withKey: "playerAnimation")
+        
+        if let url = Bundle.main.url(forResource: "IdleSound", withExtension: "wav") {
+            let sound = SKAudioNode(url: url)
+            sound.name = "locomotionSound"
+            sound.autoplayLooped = false
+            sprite.addChild(sound)
+            sound.run(SKAction.play())
+        }
+    }
+    
+    override func willExit(to nextState: GKState) {
+        locomotionComponent.entity?.component(ofType: GKSKNodeComponent.self)?.node.childNode(withName: "locomotionSound")?.removeFromParent()
     }
 }
