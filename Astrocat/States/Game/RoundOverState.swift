@@ -17,7 +17,7 @@ class RoundOverState: GKState {
     }
     
     override func isValidNextState(_ stateClass: AnyClass) -> Bool {
-        return false
+        return stateClass == CountdownState.self || stateClass == GameOverState.self
     }
     
     override func didEnter(from previousState: GKState?) {
@@ -27,5 +27,31 @@ class RoundOverState: GKState {
         let resultLabel = ResultLabelNode()
         resultLabel.setFinishTime(time)
         scene.mainCameraNode.addChild(resultLabel)
+        
+        let waitAction = SKAction.wait(forDuration: 3.0)
+        let advanceAction = SKAction.run {
+            [weak self] in
+            self?.advanceToNextRoundOrEnd()
+        }
+        scene.run(SKAction.sequence([waitAction, advanceAction]))
+    }
+    
+    private func advanceToNextRoundOrEnd() {
+        guard let gameState = scene.gameState else { return }
+        
+        // Remove result UI
+        scene.mainCameraNode.children
+            .filter { $0 is ResultLabelNode }
+            .forEach { $0.removeFromParent() }
+        
+        // Solo or last round in Multiplayer
+        if gameState.isLastRound || scene.matchSystem != nil {
+            stateMachine?.enter(GameOverState.self)
+        } else {
+            // Next round
+            gameState.currentRound += 1
+            scene.resetForNextRound()
+            stateMachine?.enter(CountdownState.self)
+        }
     }
 }
