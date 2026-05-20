@@ -57,8 +57,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                   let y = message.playerY else { return }
             
             if self.remotePlayers[id] == nil {
-                let remoteEntity = RemotePlayerEntity(scene: self)
-                self.remotePlayers[id] = remoteEntity
+                let name = message.playerName ?? "Player"
+                
+                let variantIndex = abs(id.hashValue) % CatColorVariant.allCases.count
+                let variant = CatColorVariant(rawValue: variantIndex) ?? .orange
+                
+                let entity = RemotePlayerEntity(
+                    scene: self,
+                    colorVariant: variant,
+                    displayName: name
+                )
+                self.remotePlayers[id] = entity
             }
             let dx = message.playerDX ?? 0
             let dy = message.playerDY ?? 0
@@ -84,8 +93,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
               let body = node.physicsBody else { return }
         
         let localID = GKLocalPlayer.local.gamePlayerID
+        let localName = GKLocalPlayer.local.alias
         let msg = GameMessage.playerUpdate(
             senderID: localID,
+            playerName: localName,
             playerX: node.position.x,
             playerY: node.position.y,
             playerDX: body.velocity.dx,
@@ -99,7 +110,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     // MARK: - Setup
-    
     private func setupCamera() {
         addChild(mainCamera)
         self.camera = mainCamera
