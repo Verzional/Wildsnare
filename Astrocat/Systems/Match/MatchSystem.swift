@@ -130,6 +130,8 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         let nextRound = currentRound + 1
         if nextRound < maxRounds {
             scheduleNextRound(index: nextRound)
+        } else {
+            onFinalResultsReceived?(results)
         }
     }
     
@@ -150,7 +152,8 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             let msg = GameMessage.roundStart(
                 senderID: GKLocalPlayer.local.gamePlayerID,
                 roundIndex: index,
-                startTimeEpoch: epoch
+                randomSeed: seed,
+                startTimeEpoch: epoch,
             )
             self.send(msg, with: .reliable)
             
@@ -288,7 +291,6 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
                 if let round = message.roundIndex,
                    let seed = message.randomSeed,
                    let epoch = message.startTimeEpoch {
-                    onRoundStartReceived?(round, seed, epoch)
                     playerTimes.removeAll()
                     readyPlayersIDs.removeAll()
                     hasSentGameStart = false
