@@ -48,6 +48,7 @@ struct MatchmakingView: View {
                         .rotationEffect(.degrees(catRotation))
                         .shadow(color: .white.opacity(0.15), radius: 16, x: 0, y: 8)
                         .onAppear {
+                            AudioManager.shared.playBGM(.home)
                             withAnimation(
                                 .easeInOut(duration: 2.2)
                                 .repeatForever(autoreverses: true)

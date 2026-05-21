@@ -24,6 +24,19 @@ class CountdownState: GKState {
         scene.isPlayerInputEnabled = false
         scene.timerLabel.reset()
         
+        if let currentRound = scene.gameState?.currentRound {
+            switch currentRound {
+            case 1:
+                AudioManager.shared.playBGM(.earth)
+            case 2:
+                AudioManager.shared.playBGM(.sky)
+            case 3:
+                AudioManager.shared.playBGM(.space)
+            default:
+                break
+            }
+        }
+        
         let countdownLabel = CountdownLabelNode()
         scene.mainCameraNode.addChild(countdownLabel)
         

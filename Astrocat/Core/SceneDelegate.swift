@@ -20,6 +20,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = scene as? UIWindowScene else { return }
         window = UIWindow(windowScene: windowScene)
         
+        AudioManager.shared.playBGM(.home)
+        
         let splashVC = UIHostingController(
             rootView: SplashScreenView { [weak self] in
                 self?.showMatchmakingScreen()
