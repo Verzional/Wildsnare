@@ -27,4 +27,19 @@ class LocomotionComponent: GKComponent {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    func playIdleAnimation() {
+        guard let entity,
+              let sprite = entity.component(ofType: GKSKNodeComponent.self)?.node as? SKSpriteNode
+        else { return }
+        
+        sprite.removeAction(forKey: "playerAnimation")
+        
+        let idleAnimation = SKAction.playerAnimation(
+            skinPrefix: skinPrefix,
+            animation: .idle
+        )
+        
+        sprite.run(idleAnimation, withKey: "playerAnimation")
+    }
 }
