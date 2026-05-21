@@ -12,45 +12,67 @@ import GameplayKit
 
 class GameViewController: UIViewController {
     var levelSeed: UInt64?
-    
-    
     var matchSystem: MatchSystem?
-    
+
+    private var currentLevel: Int = 1
+    private let finalLevel: Int = 3
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        if let scene = GKScene(fileNamed: "GameScene") {
-            if let sceneNode = scene.rootNode as! GameScene? {
-                
-                sceneNode.entities = scene.entities
-                sceneNode.graphs = scene.graphs
-                sceneNode.scaleMode = .aspectFill
-                sceneNode.levelSeed = levelSeed
-                sceneNode.matchSystem = matchSystem
-                
-                sceneNode.onGameFinished = { [weak self] results in
-                    let ms = self?.matchSystem
-                    let resultsVC = UIHostingController(rootView:
-                                                            ResultsView(results: results) {
-                        ms?.leaveMatch()
-                        self?.presentingViewController?.dismiss(animated: true)
-                    }
-                    )
-                    resultsVC.modalPresentationStyle = .fullScreen
-                    self?.present(resultsVC, animated: true)
-                }
-                sceneNode.levelSeed = levelSeed
-                sceneNode.matchSystem = matchSystem
-                
-                if let view = self.view as! SKView? {
-                    view.presentScene(sceneNode)
-                    view.ignoresSiblingOrder = true
-                    view.showsFPS = true
-                    view.showsNodeCount = true
-                }
+        presentLevel()
+    }
+
+    private func presentLevel() {
+        guard let scene = GKScene(fileNamed: "GameScene"),
+              let sceneNode = scene.rootNode as? GameScene,
+              let view = self.view as? SKView else { return }
+
+        sceneNode.entities = scene.entities
+        sceneNode.graphs = scene.graphs
+        sceneNode.scaleMode = .aspectFill
+        sceneNode.levelSeed = levelSeed
+        sceneNode.matchSystem = matchSystem
+
+        sceneNode.onGameFinished = { [weak self] results in
+            guard let self else { return }
+
+            if self.currentLevel < self.finalLevel {
+                self.showRoundVictoryOverlay(results: results)
+            } else {
+                self.showFinalResults(results: results)
             }
         }
+
+        view.presentScene(sceneNode)
+        view.ignoresSiblingOrder = true
+        view.showsFPS = true
+        view.showsNodeCount = true
+    }
+
+    private func showRoundVictoryOverlay(results: [RaceResult]) {
+        let overlayVC = UIHostingController(
+            rootView: RoundVictoryOverlayView(level: currentLevel, results: results) { [weak self] in
+                guard let self else { return }
+                self.dismiss(animated: true) {
+                    self.currentLevel += 1
+                    self.levelSeed = UInt64(Date().timeIntervalSince1970)
+                    self.presentLevel()
+                }
+            }
+        )
+        overlayVC.modalPresentationStyle = .overFullScreen
+        overlayVC.view.backgroundColor = .clear
+        present(overlayVC, animated: true)
+    }
+
+    private func showFinalResults(results: [RaceResult]) {
+        let ms = matchSystem
+        let resultsVC = UIHostingController(rootView: ResultsView(results: results) {
+            ms?.leaveMatch()
+            self.presentingViewController?.dismiss(animated: true)
+        })
+        resultsVC.modalPresentationStyle = .fullScreen
+        present(resultsVC, animated: true)
     }
     
     override func loadView() {
