@@ -4,25 +4,14 @@ import GameplayKit
 class RemotePlayerEntity: GKEntity {
     let node: SKSpriteNode
     private let nameLabel: SKLabelNode
-    
-    // Cache animations so atlases are only loaded once
-    private lazy var idleAnimation: SKAction = {
-        SKAction.buildAnimation(atlasName: "N-Idle", prefix: "NI")
-    }()
-    private lazy var runAnimation: SKAction = {
-        SKAction.buildAnimation(atlasName: "N-Run", prefix: "NR")
-    }()
-    private lazy var jumpAnimation: SKAction = {
-        SKAction.buildAnimation(atlasName: "N-Jump", prefix: "NJ")
-    }()
-    
-    // Track current state to avoid restarting the same animation every frame
+    private let skinPrefix: String
     private var currentAnimationKey: String = ""
     
-    init(scene: SKScene, colorVariant: CatColorVariant, displayName: String) {
-        // Use first idle frame as initial texture — avoids blank sprite on spawn
-        let idleAtlas = SKTextureAtlas(named: "N-Idle")
-        let firstFrame = idleAtlas.textureNamed("NI-Frame-1")
+    init(scene: SKScene, colorVariant: CatColorVariant, displayName: String, skinPrefix: String = "N") {
+        self.skinPrefix = skinPrefix
+        
+        let idleAtlas = SKTextureAtlas(named: "\(skinPrefix)-Idle")
+        let firstFrame = idleAtlas.textureNamed("\(skinPrefix)I-Frame-1")
         
         node = SKSpriteNode(texture: firstFrame)
         node.setScale(1.0)
@@ -42,8 +31,7 @@ class RemotePlayerEntity: GKEntity {
         node.addChild(nameLabel)
         scene.addChild(node)
         
-        // Start with idle
-        playAnimation(idleAnimation, key: "idle")
+        playAnimation(.idle)
     }
     
     required init?(coder: NSCoder) {
@@ -51,33 +39,32 @@ class RemotePlayerEntity: GKEntity {
     }
     
     func updatePosition(x: CGFloat, y: CGFloat, dx: CGFloat, dy: CGFloat) {
-        // Movement interpolation
         node.removeAction(forKey: "remoteMove")
         node.run(SKAction.move(to: CGPoint(x: x, y: y), duration: 0.1), withKey: "remoteMove")
         
-        // Facing direction
         if dx != 0 {
             node.xScale = dx > 0 ? abs(node.xScale) : -abs(node.xScale)
             nameLabel.xScale = dx > 0 ? 1 : -1
         }
         
-        // Animation state — inferred from velocity
         let isAirborne = dy > 50 || dy < -50
         let isMoving = abs(dx) > 10
         
         if isAirborne {
-            playAnimation(jumpAnimation, key: "jump")
+            playAnimation(.jump)
         } else if isMoving {
-            playAnimation(runAnimation, key: "run")
+            playAnimation(.run)
         } else {
-            playAnimation(idleAnimation, key: "idle")
+            playAnimation(.idle)
         }
     }
     
-    private func playAnimation(_ animation: SKAction, key: String) {
+    private func playAnimation(_ animation: PlayerAnimation) {
+        let key = animation.atlasName
         guard currentAnimationKey != key else { return }
         currentAnimationKey = key
-        node.run(animation, withKey: "playerAnimation")
+        let action = SKAction.playerAnimation(skinPrefix: skinPrefix, animation: animation)
+        node.run(action, withKey: "playerAnimation")
     }
     
     func removeFromScene() {

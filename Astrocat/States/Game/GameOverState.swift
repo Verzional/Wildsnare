@@ -7,9 +7,12 @@
 
 import GameplayKit
 import SpriteKit
+import GameKit
 
 class GameOverState: GKState {
     unowned let scene: GameScene
+    private var overlay: RoundTransitionOverlay?
+    private var finishedPlayers: [(name: String, time: TimeInterval)] = []
     
     init(scene: GameScene) {
         self.scene = scene
@@ -24,14 +27,73 @@ class GameOverState: GKState {
         scene.isPlayerInputEnabled = false
         
         let time = scene.gameState?.raceTime ?? 0
+        print("[GameOverState] didEnter: round=\(scene.gameState?.currentRound ?? -1), time=\(time), isMultiplayer=\(scene.matchSystem != nil)")
         
-        // Multiplayer
         if let matchSystem = scene.matchSystem {
+            showMultiplayerOverlay(localTime: time)
             matchSystem.localPlayerFinished(time: time)
         } else {
             let resultLabel = ResultLabelNode()
             resultLabel.setFinishTime(time)
             scene.mainCameraNode.addChild(resultLabel)
+        }
+    }
+    
+    private func showMultiplayerOverlay(localTime: TimeInterval) {
+        let transitionOverlay = RoundTransitionOverlay()
+        scene.mainCameraNode.addChild(transitionOverlay)
+        self.overlay = transitionOverlay
+        
+        let currentRound = scene.gameState?.currentRound ?? 1
+        let totalRounds = scene.gameState?.totalRounds ?? 3
+        let isLastRound = currentRound >= totalRounds
+        
+        transitionOverlay.setTitle(isLastRound ? "Race Complete" : "Round \(currentRound)/\(totalRounds)")
+        
+        // Build initial leaderboard from all known finish times (includes players who finished before us)
+        let localID = GKLocalPlayer.local.gamePlayerID
+        let localName = GKLocalPlayer.local.alias
+        finishedPlayers = [(name: localName, time: localTime)]
+        
+        if let playerTimes = scene.matchSystem?.playerTimes {
+            for (id, time) in playerTimes where id != localID {
+                finishedPlayers.append((name: id, time: time))
+            }
+        }
+        finishedPlayers.sort { $0.time < $1.time }
+        transitionOverlay.updateLeaderboard(times: finishedPlayers)
+        
+        // Add new players as they finish
+        scene.matchSystem?.onPlayerFinishedReceived = { [weak self] message in
+            guard let self = self, let overlay = self.overlay else { return }
+            if let finishTime = message.finishTime {
+                let name = message.playerName ?? message.senderID ?? "Player"
+                // Avoid duplicates
+                if !self.finishedPlayers.contains(where: { $0.time == finishTime && $0.name == name }) {
+                    self.finishedPlayers.append((name: name, time: finishTime))
+                    self.finishedPlayers.sort { $0.time < $1.time }
+                    overlay.updateLeaderboard(times: self.finishedPlayers)
+                }
+            }
+        }
+        
+        // Update status when all results are in
+        scene.matchSystem?.onFinalResultsReceived = { [weak self] results in
+            guard let self = self, let overlay = self.overlay else {
+                print("[GameOverState] onFinalResultsReceived: self or overlay is nil")
+                return
+            }
+            let currentRound = self.scene.gameState?.currentRound ?? 1
+            let totalRounds = self.scene.gameState?.totalRounds ?? 3
+            let isLast = currentRound >= totalRounds
+            print("[GameOverState] onFinalResultsReceived: round=\(currentRound)/\(totalRounds), isLast=\(isLast)")
+            overlay.setStatus(isLast ? "Final Results" : "Loading next round...")
+            
+            // Only show ResultsView on the final round
+            if isLast {
+                self.scene.isPaused = true
+                self.scene.onGameFinished?(results)
+            }
         }
     }
 }

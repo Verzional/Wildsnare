@@ -23,6 +23,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     var match: GKMatch?
     var readyPlayersIDs = Set<String>()
     var hasSentGameStart = false
+    private var hasScheduledNextRound = false
     private var readyHeartbeatTimer: Timer?
     private var hostStartTimeoutTimer: Timer?
     
@@ -86,8 +87,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
 
     
     func leaveMatch() {
-        readyHeartbeatTimer?.invalidate()
-        readyHeartbeatTimer = nil
+        stopReadyHeartbeat()
         hostStartTimeoutTimer?.invalidate()
         hostStartTimeoutTimer = nil
         
@@ -96,6 +96,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         
         readyPlayersIDs.removeAll()
         hasSentGameStart = false
+        hasScheduledNextRound = false
         isHost = false
         randomSeed = nil
         raceStarted = false
@@ -107,6 +108,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         let localID = GKLocalPlayer.local.gamePlayerID
         _ = GKLocalPlayer.local.alias
         playerTimes[localID] = time
+        print("[MatchSystem] localPlayerFinished: time=\(time), currentRound=\(currentRound), playerTimes=\(playerTimes.count)")
         
         let msg = GameMessage.playerFinished(senderID: localID, finishTime: time)
         send(msg, with: .reliable)
@@ -115,9 +117,13 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     }
     
     private func checkAndBroadcastFinalResults() {
-        guard isHost else { return }
         let expectedCount = (match?.players.count ?? 0) + 1
+        print("[MatchSystem] checkAndBroadcastFinalResults: isHost=\(isHost), hasScheduled=\(hasScheduledNextRound), playerTimes=\(playerTimes.count)/\(expectedCount)")
+        guard isHost, !hasScheduledNextRound else { return }
         guard playerTimes.count >= expectedCount else { return }
+        
+        hasScheduledNextRound = true
+        print("[MatchSystem] All players finished round \(currentRound). Broadcasting results.")
         
         let sorted = playerTimes.sorted { $0.value < $1.value }
         let results = sorted.map { (id, time) in
@@ -126,6 +132,46 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         let msg = GameMessage.finalResults(finalResults: results)
         send(msg, with: .reliable)
         onFinalResultsReceived?(results)
+        
+        let nextRound = currentRound + 1
+        print("[MatchSystem] nextRound=\(nextRound), maxRounds=\(maxRounds), willSchedule=\(nextRound < maxRounds)")
+        if nextRound < maxRounds {
+            scheduleNextRound(index: nextRound)
+        }
+    }
+    
+    // MARK: Next Round Scheduling
+    private func scheduleNextRound(index: Int) {
+        print("[MatchSystem] scheduleNextRound(\(index)) — will fire in 3s")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+            guard let self = self else {
+                print("[MatchSystem] scheduleNextRound(\(index)) — self is nil, MatchSystem deallocated")
+                return
+            }
+            
+            print("[MatchSystem] Firing roundStart for index=\(index), onRoundStartReceived is \(self.onRoundStartReceived == nil ? "nil" : "set")")
+            
+            self.hasScheduledNextRound = false
+            self.playerTimes.removeAll()
+            self.readyPlayersIDs.removeAll()
+            self.currentRound = index
+            self.matchState = .inGame
+            
+            let seed = UInt64.random(in: 0...UInt64.max)
+            self.randomSeed = seed
+            
+            let epoch = Date().timeIntervalSince1970
+            let msg = GameMessage.roundStart(
+                senderID: GKLocalPlayer.local.gamePlayerID,
+                roundIndex: index,
+                randomSeed: seed,
+                startTimeEpoch: epoch,
+            )
+            self.send(msg, with: .reliable)
+            
+            self.onRoundStartReceived?(index, seed, epoch)
+            print("[MatchSystem] roundStart sent and onRoundStartReceived called for index=\(index)")
+        }
     }
     
     // MARK: Ready Heartbeat
@@ -138,6 +184,11 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             }
         }
     }
+
+    private func stopReadyHeartbeat() {
+        readyHeartbeatTimer?.invalidate()
+        readyHeartbeatTimer = nil
+    }
     
     func sendReadyHeartbeat(){
         let localID = GKLocalPlayer.local.gamePlayerID
@@ -147,7 +198,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     
     // MARK: Host Start Logic
     func tryStartIfHost(){
-        guard isHost, match != nil, !hasSentGameStart else { return }
+        guard isHost, match != nil, !hasSentGameStart, matchState == .inLobby else { return }
         
         scheduleHostStartTimeout()
         
@@ -181,6 +232,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         self.randomSeed = seed
         hasSentGameStart = true
         matchState = .inGame
+        stopReadyHeartbeat()
         send(GameMessage.gameStart(randomSeed: seed), with: .reliable)
         
         onStartMultiplayer?()
@@ -232,8 +284,10 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             
             switch message.messageType {
             case .gameStart:
+                guard matchState != .inGame else { return }
                 randomSeed = message.randomSeed
                 matchState = .inGame
+                stopReadyHeartbeat()
                 onStartMultiplayer?()
             case .playerReady:
                 if !readyPlayersIDs.contains(player.gamePlayerID){
@@ -243,8 +297,11 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             case .playerFinished:
                 if let id = message.senderID, let time = message.finishTime {
                     playerTimes[id] = time
+                    print("[MatchSystem] Received playerFinished from \(id), time=\(time), playerTimes=\(playerTimes.count)")
                 }
-                onPlayerFinishedReceived?(message)
+                var enriched = message
+                enriched.playerName = player.displayName
+                onPlayerFinishedReceived?(enriched)
                 checkAndBroadcastFinalResults()
                 
             case .playerUpdate:
@@ -252,14 +309,21 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
                 
             case .finalResults:
                 if let results = message.finalResults {
+                    print("[MatchSystem] Received finalResults, count=\(results.count), onFinalResultsReceived is \(onFinalResultsReceived == nil ? "nil" : "set")")
                     onFinalResultsReceived?(results)
                 }
             case .roundStart:
                 if let round = message.roundIndex,
                    let seed = message.randomSeed,
                    let epoch = message.startTimeEpoch {
+                    print("[MatchSystem] Received roundStart: round=\(round), onRoundStartReceived is \(onRoundStartReceived == nil ? "nil" : "set")")
+                    playerTimes.removeAll()
+                    readyPlayersIDs.removeAll()
+                    currentRound = round
+                    randomSeed = seed
                     onRoundStartReceived?(round, seed, epoch)
                 }
+                
             }
         }
         
@@ -356,13 +420,13 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             withUnsafeBytes(of: dy.bitPattern.bigEndian) { data.append(contentsOf: $0) }
             return data
         }
-        
+
         static func from(_ data: Data) -> PositionPacket? {
             guard data.count == 17, data[0] == 1 else { return nil }
-            let x  = Float(bitPattern: UInt32(bigEndian: data[1...4].withUnsafeBytes  { $0.load(as: UInt32.self) }))
-            let y  = Float(bitPattern: UInt32(bigEndian: data[5...8].withUnsafeBytes  { $0.load(as: UInt32.self) }))
-            let dx = Float(bitPattern: UInt32(bigEndian: data[9...12].withUnsafeBytes { $0.load(as: UInt32.self) }))
-            let dy = Float(bitPattern: UInt32(bigEndian: data[13...16].withUnsafeBytes { $0.load(as: UInt32.self) }))
+            let x  = Float(bitPattern: UInt32(bigEndian: data[1...4].withUnsafeBytes  { $0.loadUnaligned(as: UInt32.self) }))
+            let y  = Float(bitPattern: UInt32(bigEndian: data[5...8].withUnsafeBytes  { $0.loadUnaligned(as: UInt32.self) }))
+            let dx = Float(bitPattern: UInt32(bigEndian: data[9...12].withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) }))
+            let dy = Float(bitPattern: UInt32(bigEndian: data[13...16].withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) }))
             return PositionPacket(type: 1, x: x, y: y, dx: dx, dy: dy)
         }
     }
