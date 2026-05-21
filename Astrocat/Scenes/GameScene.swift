@@ -611,6 +611,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         if let locomotion = player?.component(ofType: LocomotionComponent.self) {
             locomotion.stateMachine.enter(IdleState.self)
+            locomotion.playIdleAnimation()
         }
         
         if let status = player?.component(ofType: StatusComponent.self) {
