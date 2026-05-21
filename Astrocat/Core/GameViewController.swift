@@ -34,7 +34,9 @@ class GameViewController: UIViewController {
                     let resultsVC = UIHostingController(rootView:
                                                             ResultsView(results: results) {
                         ms?.leaveMatch()
-                        self?.presentingViewController?.dismiss(animated: true)
+                        self?.presentingViewController?.dismiss(animated: true) {
+                            AudioManager.shared.playBGM(.home)
+                        }
                     }
                     )
                     resultsVC.modalPresentationStyle = .fullScreen
