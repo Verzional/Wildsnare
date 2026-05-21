@@ -49,19 +49,30 @@ class GameOverState: GKState {
         
         transitionOverlay.setTitle(isLastRound ? "Race Complete" : "Round \(currentRound)/\(totalRounds)")
         
-        // Show local player time first
+        // Build initial leaderboard from all known finish times (includes players who finished before us)
+        let localID = GKLocalPlayer.local.gamePlayerID
         let localName = GKLocalPlayer.local.alias
         finishedPlayers = [(name: localName, time: localTime)]
+        
+        if let playerTimes = scene.matchSystem?.playerTimes {
+            for (id, time) in playerTimes where id != localID {
+                finishedPlayers.append((name: id, time: time))
+            }
+        }
+        finishedPlayers.sort { $0.time < $1.time }
         transitionOverlay.updateLeaderboard(times: finishedPlayers)
         
-        // Re-sort and rebuild leaderboard as others finish
+        // Add new players as they finish
         scene.matchSystem?.onPlayerFinishedReceived = { [weak self] message in
             guard let self = self, let overlay = self.overlay else { return }
             if let finishTime = message.finishTime {
                 let name = message.playerName ?? message.senderID ?? "Player"
-                self.finishedPlayers.append((name: name, time: finishTime))
-                self.finishedPlayers.sort { $0.time < $1.time }
-                overlay.updateLeaderboard(times: self.finishedPlayers)
+                // Avoid duplicates
+                if !self.finishedPlayers.contains(where: { $0.time == finishTime && $0.name == name }) {
+                    self.finishedPlayers.append((name: name, time: finishTime))
+                    self.finishedPlayers.sort { $0.time < $1.time }
+                    overlay.updateLeaderboard(times: self.finishedPlayers)
+                }
             }
         }
         

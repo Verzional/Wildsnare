@@ -63,6 +63,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private func setupMultiplayer() {
         guard let matchSystem = matchSystem else { return }
         
+        // Ensure state is inGame for the new round
+        matchSystem.matchState = .inGame
+        matchSystem.onPlayerFinishedReceived = nil
+        
         matchSystem.onPlayerUpdateReceived = { [weak self] message in
             guard let self = self,
                   let id = message.senderID,
@@ -116,8 +120,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         matchSystem.onFinalResultsReceived = { [weak self] results in
             guard let self = self else { return }
-            self.isPaused = true
-            self.onGameFinished?(results)
+            let currentRound = self.gameState?.currentRound ?? 1
+            let totalRounds = self.gameState?.totalRounds ?? 3
+            if currentRound >= totalRounds {
+                self.isPaused = true
+                self.onGameFinished?(results)
+            }
         }
     }
     
