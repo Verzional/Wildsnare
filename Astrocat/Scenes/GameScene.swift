@@ -50,6 +50,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var isPlayerInputEnabled = false
     let timerLabel = RaceTimerNode()
     var currentRoundConfig: RoundConfig = .earth
+    var startingRound: Int = 1
     
     // Multiplayer Systems
     var remotePlayers: [String: RemotePlayerEntity] = [:]
@@ -79,7 +80,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 let entity = RemotePlayerEntity(
                     scene: self,
                     colorVariant: variant,
-                    displayName: name
+                    displayName: name,
+                    skinPrefix: self.currentRoundConfig.playerSkinPrefix
                 )
                 self.remotePlayers[id] = entity
             }
@@ -101,7 +103,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             nextScene.matchSystem = self.matchSystem
             nextScene.onGameFinished = self.onGameFinished
             nextScene.scaleMode = self.scaleMode
-            nextScene.startingRound = roundIndex + 1 
+            nextScene.startingRound = roundIndex + 1
+            
+            // Clean up remote players from current scene
+            for (_, remote) in self.remotePlayers {
+                remote.removeFromScene()
+            }
+            self.remotePlayers.removeAll()
             
             view.presentScene(nextScene, transition: .fade(withDuration: 0.4))
         }
@@ -568,6 +576,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Start race
         gameState = GameStateComponent(scene: self)
+        gameState?.currentRound = startingRound
         
         if let gameState = gameState {
             currentRoundConfig = gameState.currentRoundConfig

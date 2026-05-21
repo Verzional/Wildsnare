@@ -40,7 +40,6 @@ class RoundOverState: GKState {
     private func advanceToNextRoundOrEnd() {
         guard let gameState = scene.gameState else { return }
         
-        // Remove result UI
         scene.mainCameraNode.children
             .filter { $0 is ResultLabelNode }
             .forEach { $0.removeFromParent() }
@@ -49,22 +48,20 @@ class RoundOverState: GKState {
             stateMachine?.enter(GameOverState.self)
         } else {
             let rank = determineLocalPlayerRank()
-            let playerCount: Int
-            
-            if scene.matchSystem != nil {
-                playerCount = scene.matchSystem?.match?.players.count ?? 0
-            } else {
-                playerCount = 1
-            }
-            
+            let playerCount = scene.matchSystem?.match?.players.count ?? 1
             let advantage = WinnerAdvantageConfig.forRank(rank, playerCount: playerCount)
             
-            // Next round
-            gameState.currentRound += 1
-            scene.currentRoundConfig = gameState.currentRoundConfig
-            scene.resetForNextRound()
-            scene.applyWinnerAdvantage(advantage)
-            stateMachine?.enter(CountdownState.self)
+            if scene.matchSystem != nil {
+                // Multiplayer: host handles next round via onRoundStartReceived
+                stateMachine?.enter(GameOverState.self)
+            } else {
+                // Solo: advance rounds locally
+                gameState.currentRound += 1
+                scene.currentRoundConfig = gameState.currentRoundConfig
+                scene.resetForNextRound()
+                scene.applyWinnerAdvantage(advantage)
+                stateMachine?.enter(CountdownState.self)
+            }
         }
     }
     
