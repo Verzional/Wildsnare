@@ -8,10 +8,10 @@
 import SpriteKit
 
 enum CatColorVariant: Int, CaseIterable {
-    case white  = 0
-    case orange = 1
-    case blue   = 2
-    case alien  = 3
+    case white  = 0   // pure white cat
+    case cream  = 1   // warm pale yellow-beige
+    case blue   = 2   // muted blue-gray (diluted black)
+    case fawn   = 3   // warm light tan (diluted cinnamon)
     
     func makeShader() -> SKShader {
         let src = """
@@ -26,30 +26,27 @@ enum CatColorVariant: Int, CaseIterable {
         switch self {
         case .white:
             shader.uniforms = [
-                SKUniform(name: "u_tint_r", float: 1.0),
-                SKUniform(name: "u_tint_g", float: 1.0),
-                SKUniform(name: "u_tint_b", float: 1.0),
+                SKUniform(name: "u_tint_r", float: 1.00),
+                SKUniform(name: "u_tint_g", float: 1.00),
+                SKUniform(name: "u_tint_b", float: 1.00),
             ]
-        case .orange:
+        case .cream:
             shader.uniforms = [
-                SKUniform(name: "u_tint_r", float: 1.0),
-                SKUniform(name: "u_tint_g", float: 0.5),
-                SKUniform(name: "u_tint_b", float: 0.1),
+                SKUniform(name: "u_tint_r", float: 0.96),
+                SKUniform(name: "u_tint_g", float: 0.89),
+                SKUniform(name: "u_tint_b", float: 0.72),
             ]
         case .blue:
             shader.uniforms = [
-                SKUniform(name: "u_tint_r", float: 0.2),
-                SKUniform(name: "u_tint_g", float: 0.6),
-                SKUniform(name: "u_tint_b", float: 1.0),
+                SKUniform(name: "u_tint_r", float: 0.61),
+                SKUniform(name: "u_tint_g", float: 0.65),
+                SKUniform(name: "u_tint_b", float: 0.69),
             ]
-        case .alien:
+        case .fawn:
             shader.uniforms = [
-                SKUniform(name: "u_tint_r", float: 0.3),
-                SKUniform(name: "u_tint_g", float: 1.0),
-                SKUniform(name: "u_tint_b", float: 0.3),
+                SKUniform(name: "u_tint_r", float: 0.90),
+                SKUniform(name: "u_tint_g", float: 0.67),
+                SKUniform(name: "u_tint_b", float: 0.44),
             ]
         }
-        
-        return shader
-    }
 }
