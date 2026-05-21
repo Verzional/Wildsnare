@@ -50,6 +50,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var isPlayerInputEnabled = false
     let timerLabel = RaceTimerNode()
     var currentRoundConfig: RoundConfig = .earth
+    var startingRound: Int = 1
     
     // Multiplayer Systems
     var remotePlayers: [String: RemotePlayerEntity] = [:]
@@ -61,6 +62,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     private func setupMultiplayer() {
         guard let matchSystem = matchSystem else { return }
+        
+        print("[GameScene] setupMultiplayer: round=\(gameState?.currentRound ?? -1), matchState=\(matchSystem.matchState)")
+        matchSystem.matchState = .inGame
+        matchSystem.onPlayerFinishedReceived = nil
         
         matchSystem.onPlayerUpdateReceived = { [weak self] message in
             guard let self = self,
@@ -79,7 +84,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 let entity = RemotePlayerEntity(
                     scene: self,
                     colorVariant: variant,
-                    displayName: name
+                    displayName: name,
+                    skinPrefix: self.currentRoundConfig.playerSkinPrefix
                 )
                 self.remotePlayers[id] = entity
             }
@@ -93,11 +99,30 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self?.remotePlayers.removeValue(forKey: id)
         }
         
-        matchSystem.onFinalResultsReceived = { [weak self] results in
-            guard let self = self else { return }
-            self.isPaused = true
-            self.onGameFinished?(results)
+        matchSystem.onRoundStartReceived = { [weak self] roundIndex, seed, _ in
+            print("[GameScene] onRoundStartReceived: roundIndex=\(roundIndex), self=\(self == nil ? "nil" : "alive"), view=\(self?.view == nil ? "nil" : "alive")")
+            guard let self = self, let view = self.view,
+                  let nextScene = GameScene(fileNamed: "GameScene") else {
+                print("[GameScene] onRoundStartReceived: guard FAILED")
+                return
+            }
+            
+            nextScene.levelSeed = seed
+            nextScene.matchSystem = self.matchSystem
+            nextScene.onGameFinished = self.onGameFinished
+            nextScene.scaleMode = self.scaleMode
+            nextScene.startingRound = roundIndex + 1
+            print("[GameScene] Transitioning to round \(roundIndex + 1)")
+            
+            for (_, remote) in self.remotePlayers {
+                remote.removeFromScene()
+            }
+            self.remotePlayers.removeAll()
+            
+            view.presentScene(nextScene, transition: .fade(withDuration: 0.4))
         }
+        
+        matchSystem.onFinalResultsReceived = nil
     }
     
     private func broadcastLocalPosition() {
@@ -555,6 +580,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Start race
         gameState = GameStateComponent(scene: self)
+        gameState?.currentRound = startingRound
         
         if let gameState = gameState {
             currentRoundConfig = gameState.currentRoundConfig
