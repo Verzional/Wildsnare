@@ -32,17 +32,5 @@ class RunningState: GKState {
         let runAnimation = SKAction.playerAnimation(skinPrefix: locomotionComponent.skinPrefix, animation: .run)
         
         sprite.run(runAnimation, withKey: "playerAnimation")
-        
-        if let url = Bundle.main.url(forResource: "Run", withExtension: "mp3") {
-            let sound = SKAudioNode(url: url)
-            sound.name = "locomotionSound"
-            sound.autoplayLooped = false
-            sprite.addChild(sound)
-            sound.run(SKAction.play())
-        }
-    }
-    
-    override func willExit(to nextState: GKState) {
-        locomotionComponent.entity?.component(ofType: GKSKNodeComponent.self)?.node.childNode(withName: "locomotionSound")?.removeFromParent()
     }
 }

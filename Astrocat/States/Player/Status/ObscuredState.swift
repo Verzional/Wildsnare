@@ -27,7 +27,7 @@ class ObscuredState: GKState {
         
         if let nodeComponent = statusComp.entity?.component(ofType: GKSKNodeComponent.self),
            let sprite = nodeComponent.node as? SKSpriteNode {
-            if let url = Bundle.main.url(forResource: "CometDust", withExtension: "mp3") {
+            if let url = Bundle.main.url(forResource: "CometDust", withExtension: "wav") {
                 let sound = SKAudioNode(url: url)
                 sound.name = "statusSound"
                 sound.autoplayLooped = false

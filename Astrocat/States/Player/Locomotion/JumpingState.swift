@@ -33,7 +33,7 @@ class JumpingState: GKState {
         
         sprite.run(jumpAnimation, withKey: "playerAnimation")
         
-        if let url = Bundle.main.url(forResource: "Jump", withExtension: "mp3") {
+        if let url = Bundle.main.url(forResource: "Jump", withExtension: "wav") {
             let sound = SKAudioNode(url: url)
             sound.name = "locomotionSound"
             sound.autoplayLooped = false

@@ -32,7 +32,7 @@ class SlowedDownState: GKState {
         
         sprite.run(slimedAnimation, withKey: "playerAnimation")
         
-        let url = Bundle.main.url(forResource: "Slime", withExtension: "mp3")
+        let url = Bundle.main.url(forResource: "Slime", withExtension: "wav")
         if let url = url {
             let sound = SKAudioNode(url: url)
             sound.name = "statusSound"
