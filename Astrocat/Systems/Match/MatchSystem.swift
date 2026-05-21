@@ -277,7 +277,9 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
                 if let id = message.senderID, let time = message.finishTime {
                     playerTimes[id] = time
                 }
-                onPlayerFinishedReceived?(message)
+                var enriched = message
+                enriched.playerName = player.displayName
+                onPlayerFinishedReceived?(enriched)
                 checkAndBroadcastFinalResults()
                 
             case .playerUpdate:
