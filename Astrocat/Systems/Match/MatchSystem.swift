@@ -172,6 +172,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     private func forceStartIfHost() {
         guard isHost, !hasSentGameStart else { return }
         guard let match = match, !match.players.isEmpty else { return }
+        guard match.expectedPlayerCount == 0 else { return }
         beginMatchStartBroadcast()
     }
     
@@ -311,21 +312,21 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     }
     
     nonisolated func matchmakerViewController(_ viewController: GKMatchmakerViewController, didFind match: GKMatch) {
+        match.delegate = self
         Task {
             @MainActor in
             viewController.dismiss(animated: true)
             self.match = match
-            match.delegate = self
             readyPlayersIDs.removeAll()
             hasSentGameStart = false
 
             let allPlayers = match.players + [GKLocalPlayer.local]
             let sortedIDs = allPlayers.map { $0.gamePlayerID }.sorted()
             self.isHost = sortedIDs.first == GKLocalPlayer.local.gamePlayerID
-            
             matchState = .inLobby
             startReadyHeartbeat()
         }
+
     }
     private struct PositionPacket {
         var type: UInt8 = 1
@@ -334,15 +335,34 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         var dx: Float
         var dy: Float
         
+//        func toData() -> Data {
+//            var copy = self
+//            return Data(bytes: &copy, count: MemoryLayout<PositionPacket>.size)
+//        }
+//        
+//        static func from(_ data: Data) -> PositionPacket? {
+//            guard data.count >= MemoryLayout<PositionPacket>.size,
+//                  data[0] == 1 else { return nil }
+//            return data.withUnsafeBytes { $0.loadUnaligned(as: PositionPacket.self) }
+//        }
+        
         func toData() -> Data {
-            var copy = self
-            return Data(bytes: &copy, count: MemoryLayout<PositionPacket>.size)
+            var data = Data(capacity: 17)
+            data.append(type)
+            withUnsafeBytes(of: x.bitPattern.bigEndian) { data.append(contentsOf: $0) }
+            withUnsafeBytes(of: y.bitPattern.bigEndian) { data.append(contentsOf: $0) }
+            withUnsafeBytes(of: dx.bitPattern.bigEndian) { data.append(contentsOf: $0) }
+            withUnsafeBytes(of: dy.bitPattern.bigEndian) { data.append(contentsOf: $0) }
+            return data
         }
         
         static func from(_ data: Data) -> PositionPacket? {
-            guard data.count >= MemoryLayout<PositionPacket>.size,
-                  data[0] == 1 else { return nil }
-            return data.withUnsafeBytes { $0.loadUnaligned(as: PositionPacket.self) }
+            guard data.count == 17, data[0] == 1 else { return nil }
+            let x  = Float(bitPattern: UInt32(bigEndian: data[1...4].withUnsafeBytes  { $0.load(as: UInt32.self) }))
+            let y  = Float(bitPattern: UInt32(bigEndian: data[5...8].withUnsafeBytes  { $0.load(as: UInt32.self) }))
+            let dx = Float(bitPattern: UInt32(bigEndian: data[9...12].withUnsafeBytes { $0.load(as: UInt32.self) }))
+            let dy = Float(bitPattern: UInt32(bigEndian: data[13...16].withUnsafeBytes { $0.load(as: UInt32.self) }))
+            return PositionPacket(type: 1, x: x, y: y, dx: dx, dy: dy)
         }
     }
     
