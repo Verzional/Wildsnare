@@ -146,7 +146,7 @@
 				CODE_SIGN_ENTITLEMENTS = Astrocat/Astrocat.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = Y335V6WGLV;
+				DEVELOPMENT_TEAM = H853SK7458;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Astrocat/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Astrocat;
@@ -162,7 +162,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.Verzional.Astrocat;
+				PRODUCT_BUNDLE_IDENTIFIER = com.A.Astrocat;
 				PRODUCT_NAME = OhMeow;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -182,7 +182,7 @@
 				CODE_SIGN_ENTITLEMENTS = Astrocat/Astrocat.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = Y335V6WGLV;
+				DEVELOPMENT_TEAM = H853SK7458;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Astrocat/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Astrocat;
@@ -198,7 +198,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.Verzional.Astrocat;
+				PRODUCT_BUNDLE_IDENTIFIER = com.A.Astrocat;
 				PRODUCT_NAME = OhMeow;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
