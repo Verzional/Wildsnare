@@ -528,6 +528,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player?.component(ofType: StatusComponent.self)?.skinPrefix = currentRoundConfig.playerSkinPrefix
     }
     
+    func applyWinnerAdvantage(_ config: WinnerAdvantageConfig) {
+        guard let movement = player?.component(ofType: MovementComponent.self) else { return }
+        movement.speed = MovementComponent.defaultSpeed *  config.speedMultiplier
+        movement.impulse = MovementComponent.defaultImpulse * config.impulseMultiplier
+        
+        guard config.duration > 0 else { return }
+        
+        // Reset after duration
+        let wait = SKAction.wait(forDuration: config.duration)
+        let reset = SKAction.run { [weak self] in
+            self?.resetPlayerStats()
+        }
+        run(SKAction.sequence([wait, reset]), withKey: "advantageTimer")
+    }
+    
+    func resetPlayerStats() {
+        guard let movement = player?.component(ofType: MovementComponent.self) else { return }
+        movement.speed = MovementComponent.defaultSpeed
+        movement.impulse = MovementComponent.defaultImpulse
+    }
+    
     override func didMove(to view: SKView) {
         super.didMove(to: view)
         self.physicsWorld.contactDelegate = self
@@ -561,6 +582,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func resetForNextRound() {
         guard let gameState = gameState else { return }
         
+        removeAction(forKey: "advantageTimer")
+        resetPlayerStats()
         currentRoundConfig = gameState.currentRoundConfig
         
         applyCurrentRoundSkinToPlayer()
