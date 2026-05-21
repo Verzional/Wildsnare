@@ -32,6 +32,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.makeKeyAndVisible()
     }
 
+    func navigateToMatchmakingScreen() {
+        showMatchmakingScreen()
+    }
+
     private func showMatchmakingScreen() {
         guard let window else { return }
 
