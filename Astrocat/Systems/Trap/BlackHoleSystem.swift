@@ -14,7 +14,7 @@ class BlackHoleSystem: GKComponent {
     override func didAddToEntity() {
         super.didAddToEntity()
         
-        if let url = Bundle.main.url(forResource: "BlackHole", withExtension: "mp3"),
+        if let url = Bundle.main.url(forResource: "BlackHole", withExtension: "wav"),
            let trapNode = entity?.component(ofType: GKSKNodeComponent.self)?.node {
             let sound = SKAudioNode(url: url)
             sound.name = "blackHoleSound"

@@ -32,7 +32,7 @@ class StunnedState: GKState {
         }
         
         
-        let url = Bundle.main.url(forResource: "ElectricCoil", withExtension: "mp3")
+        let url = Bundle.main.url(forResource: "ElectricCoil", withExtension: "wav")
         if let url = url {
             let sound = SKAudioNode(url: url)
             sound.name = "statusSound"
