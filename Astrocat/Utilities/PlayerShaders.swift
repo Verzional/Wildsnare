@@ -16,8 +16,14 @@ enum CatColorVariant: Int, CaseIterable {
     func makeShader() -> SKShader {
         let src = """
     void main() {
-        vec4 texColor = texture2D(u_texture, v_tex_coord);
-        gl_FragColor = texColor * vec4(u_tint_r, u_tint_g, u_tint_b, 1.0);
+        vec4 tex = texture2D(u_texture, v_tex_coord);
+    
+        // Preserve original luminance so shading/outlines stay intact.
+        // Only the hue shifts — bright pixels stay bright, dark pixels stay dark.
+        float lum = dot(tex.rgb, vec3(0.299, 0.587, 0.114));
+        vec3 tinted = vec3(u_tint_r, u_tint_g, u_tint_b) * lum;
+    
+        gl_FragColor = vec4(tinted, tex.a);
     }
     """
         
@@ -25,32 +31,32 @@ enum CatColorVariant: Int, CaseIterable {
         
         switch self {
         case .white:
-                // Pure white — no tint change, 1:1 white
+                // Pure white — no shift
             shader.uniforms = [
                 SKUniform(name: "u_tint_r", float: 1.00),
                 SKUniform(name: "u_tint_g", float: 1.00),
                 SKUniform(name: "u_tint_b", float: 1.00),
             ]
         case .cream:
-                // Warm pale yellow-beige — #F5E3B8 → (0.96, 0.89, 0.72)
+                // Barely warm ivory — almost white with a faint yellow warmth
             shader.uniforms = [
-                SKUniform(name: "u_tint_r", float: 0.96),
-                SKUniform(name: "u_tint_g", float: 0.89),
-                SKUniform(name: "u_tint_b", float: 0.72),
+                SKUniform(name: "u_tint_r", float: 1.00),
+                SKUniform(name: "u_tint_g", float: 0.97),
+                SKUniform(name: "u_tint_b", float: 0.88),
             ]
         case .blue:
-                // Muted blue-gray, like a British Blue — #9BA7B0 → (0.61, 0.65, 0.69)
+                // Very pale cool gray — like a British Blue in soft light
             shader.uniforms = [
-                SKUniform(name: "u_tint_r", float: 0.61),
-                SKUniform(name: "u_tint_g", float: 0.65),
-                SKUniform(name: "u_tint_b", float: 0.69),
+                SKUniform(name: "u_tint_r", float: 0.88),
+                SKUniform(name: "u_tint_g", float: 0.92),
+                SKUniform(name: "u_tint_b", float: 0.96),
             ]
         case .fawn:
-                // Warm tan — #E5AA70 → (0.90, 0.67, 0.44)
+                // Warm pinkish tan — diluted cinnamon, not orange
             shader.uniforms = [
-                SKUniform(name: "u_tint_r", float: 0.90),
-                SKUniform(name: "u_tint_g", float: 0.67),
-                SKUniform(name: "u_tint_b", float: 0.44),
+                SKUniform(name: "u_tint_r", float: 1.00),
+                SKUniform(name: "u_tint_g", float: 0.92),
+                SKUniform(name: "u_tint_b", float: 0.78),
             ]
         }
         
