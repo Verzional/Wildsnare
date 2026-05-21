@@ -8,6 +8,8 @@
 import Foundation
 import CoreGraphics
 
+let maxRounds = 3
+
 enum MatchMode {
     case solo
     case multiplayer

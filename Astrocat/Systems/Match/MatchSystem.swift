@@ -126,6 +126,36 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         let msg = GameMessage.finalResults(finalResults: results)
         send(msg, with: .reliable)
         onFinalResultsReceived?(results)
+        
+        let nextRound = currentRound + 1
+        if nextRound < maxRounds {
+            scheduleNextRound(index: nextRound)
+        }
+    }
+    
+    // MARK: Next Round Scheduling
+    private func scheduleNextRound(index: Int) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+            guard let self = self else { return }
+            
+            self.playerTimes.removeAll()
+            self.readyPlayersIDs.removeAll()
+            self.hasSentGameStart = false
+            self.currentRound = index
+            
+            let seed = UInt64.random(in: 0...UInt64.max)
+            self.randomSeed = seed
+            
+            let epoch = Date().timeIntervalSince1970
+            let msg = GameMessage.roundStart(
+                senderID: GKLocalPlayer.local.gamePlayerID,
+                roundIndex: index,
+                startTimeEpoch: epoch
+            )
+            self.send(msg, with: .reliable)
+            
+            self.onRoundStartReceived?(index, seed, epoch)
+        }
     }
     
     // MARK: Ready Heartbeat
@@ -259,7 +289,14 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
                    let seed = message.randomSeed,
                    let epoch = message.startTimeEpoch {
                     onRoundStartReceived?(round, seed, epoch)
+                    playerTimes.removeAll()
+                    readyPlayersIDs.removeAll()
+                    hasSentGameStart = false
+                    currentRound = round
+                    randomSeed = seed
+                    onRoundStartReceived?(round, seed, epoch)
                 }
+                
             }
         }
         
