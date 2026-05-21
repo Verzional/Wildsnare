@@ -25,28 +25,35 @@ enum CatColorVariant: Int, CaseIterable {
         
         switch self {
         case .white:
+                // Pure white — no tint change, 1:1 white
             shader.uniforms = [
                 SKUniform(name: "u_tint_r", float: 1.00),
                 SKUniform(name: "u_tint_g", float: 1.00),
                 SKUniform(name: "u_tint_b", float: 1.00),
             ]
         case .cream:
+                // Warm pale yellow-beige — #F5E3B8 → (0.96, 0.89, 0.72)
             shader.uniforms = [
                 SKUniform(name: "u_tint_r", float: 0.96),
                 SKUniform(name: "u_tint_g", float: 0.89),
                 SKUniform(name: "u_tint_b", float: 0.72),
             ]
         case .blue:
+                // Muted blue-gray, like a British Blue — #9BA7B0 → (0.61, 0.65, 0.69)
             shader.uniforms = [
                 SKUniform(name: "u_tint_r", float: 0.61),
                 SKUniform(name: "u_tint_g", float: 0.65),
                 SKUniform(name: "u_tint_b", float: 0.69),
             ]
         case .fawn:
+                // Warm tan — #E5AA70 → (0.90, 0.67, 0.44)
             shader.uniforms = [
                 SKUniform(name: "u_tint_r", float: 0.90),
                 SKUniform(name: "u_tint_g", float: 0.67),
                 SKUniform(name: "u_tint_b", float: 0.44),
             ]
         }
+        
+        return shader
+    }
 }
