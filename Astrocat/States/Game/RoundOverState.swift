@@ -7,6 +7,7 @@
 
 import GameplayKit
 import SpriteKit
+import GameKit
 
 class RoundOverState: GKState {
     unowned let scene: GameScene
@@ -44,14 +45,37 @@ class RoundOverState: GKState {
             .filter { $0 is ResultLabelNode }
             .forEach { $0.removeFromParent() }
         
-        // Solo or last round in Multiplayer
-        if gameState.isLastRound || scene.matchSystem != nil {
+        if gameState.isLastRound {
             stateMachine?.enter(GameOverState.self)
         } else {
+            let rank = determineLocalPlayerRank()
+            let playerCount: Int
+            
+            if scene.matchSystem != nil {
+                playerCount = scene.matchSystem?.match?.players.count ?? 0
+            } else {
+                playerCount = 1
+            }
+            
+            let advantage = WinnerAdvantageConfig.forRank(rank, playerCount: playerCount)
+            
             // Next round
             gameState.currentRound += 1
+            scene.currentRoundConfig = gameState.currentRoundConfig
             scene.resetForNextRound()
+            scene.applyWinnerAdvantage(advantage)
             stateMachine?.enter(CountdownState.self)
         }
+    }
+    
+    private func determineLocalPlayerRank() -> Int {
+        let localTime = scene.gameState?.raceTime ?? 0
+        
+        // Solo
+        guard let matchSystem = scene.matchSystem else { return 1 }
+        
+        // Multiplayer
+        let fasterCount = matchSystem.playerTimes.values.filter { $0 < localTime }.count
+        return fasterCount + 1
     }
 }
