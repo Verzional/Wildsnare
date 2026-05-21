@@ -328,7 +328,8 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         }
 
     }
-    private struct PositionPacket {
+    
+    nonisolated private struct PositionPacket {
         var type: UInt8 = 1
         var x: Float
         var y: Float
@@ -365,5 +366,4 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             return PositionPacket(type: 1, x: x, y: y, dx: dx, dy: dy)
         }
     }
-    
 }

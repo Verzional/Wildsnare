@@ -27,7 +27,7 @@ class ResultLabelNode: SKLabelNode {
         let seconds = Int(time) % 60
         let hundredths = Int((time.truncatingRemainder(dividingBy: 1)) * 100)
         
-        let resultLabel = ResultLabelNode()
+        _ = ResultLabelNode()
         text = String(format: "Finish! %d:%02d.%02d", minutes, seconds, hundredths)
     }
 }

@@ -27,6 +27,8 @@ class JumpingState: GKState {
             return
         }
         
+        guard locomotionComponent.canPlayLocomotionAnimation else { return }
+        
         let jumpAnimation = SKAction.playerAnimation(skinPrefix: locomotionComponent.skinPrefix, animation: .jump)
         
         sprite.run(jumpAnimation, withKey: "playerAnimation")

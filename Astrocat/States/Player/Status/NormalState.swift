@@ -9,7 +9,7 @@ import GameplayKit
 
 class NormalState: GKState {
     unowned let statusComp: StatusComponent
-        
+    
     init(component: StatusComponent) {
         self.statusComp = component
         super.init()
@@ -21,17 +21,14 @@ class NormalState: GKState {
     
     override func didEnter(from previousState: GKState?) {
         guard let entity = statusComp.entity,
-              let nodeComponent = entity.component(ofType: GKSKNodeComponent.self),
-              let sprite = nodeComponent.node as? SKSpriteNode else {
+              let locomotion = entity.component(ofType: LocomotionComponent.self) else {
             return
         }
         
-        let runAnimation = SKAction.playerAnimation(skinPrefix: statusComp.skinPrefix, animation: .run)
-        
-        sprite.run(runAnimation, withKey: "playerAnimation")
+        locomotion.resumeCurrentStateAnimation()
     }
     
     override func update(deltaTime seconds: TimeInterval) {
-
+        
     }
 }
