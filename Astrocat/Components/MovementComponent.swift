@@ -8,6 +8,9 @@
 import GameplayKit
 
 class MovementComponent: GKComponent {
-    var speed: CGFloat = 300.0
-    var impulse: CGFloat = 100.0
+    static let defaultSpeed: CGFloat = 300.0
+    static let defaultImpulse: CGFloat = 100.0
+    
+    var speed: CGFloat = defaultSpeed
+    var impulse: CGFloat = defaultImpulse
 }
