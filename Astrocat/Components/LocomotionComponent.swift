@@ -28,6 +28,25 @@ class LocomotionComponent: GKComponent {
         fatalError("init(coder:) has not been implemented")
     }
     
+    var canPlayLocomotionAnimation: Bool {
+        guard let statusMachine = entity?.component(ofType: StatusComponent.self)?.stateMachine,
+              let currentStatus = statusMachine.currentState else {
+            return true 
+        }
+        
+        let isStunned = currentStatus is StunnedState
+        let isRepelled = currentStatus is RepelledState
+        let isSlimed = currentStatus is SlowedDownState
+        
+        return !(isStunned || isRepelled || isSlimed)
+    }
+    
+    func resumeCurrentStateAnimation() {
+        if let currentState = stateMachine.currentState {
+            currentState.didEnter(from: nil)
+        }
+    }
+    
     func playIdleAnimation() {
         guard let entity,
               let sprite = entity.component(ofType: GKSKNodeComponent.self)?.node as? SKSpriteNode

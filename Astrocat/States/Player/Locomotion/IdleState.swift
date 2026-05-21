@@ -27,6 +27,8 @@ class IdleState: GKState {
             return
         }
         
+        guard locomotionComponent.canPlayLocomotionAnimation else { return }
+        
         let idleAnimation = SKAction.playerAnimation(skinPrefix: locomotionComponent.skinPrefix, animation: .idle)
         
         sprite.run(idleAnimation, withKey: "playerAnimation")

@@ -27,6 +27,8 @@ class RunningState: GKState {
             return
         }
         
+        guard locomotionComponent.canPlayLocomotionAnimation else { return }
+        
         let runAnimation = SKAction.playerAnimation(skinPrefix: locomotionComponent.skinPrefix, animation: .run)
         
         sprite.run(runAnimation, withKey: "playerAnimation")
