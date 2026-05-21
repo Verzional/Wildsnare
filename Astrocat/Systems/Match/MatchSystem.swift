@@ -393,13 +393,13 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             withUnsafeBytes(of: dy.bitPattern.bigEndian) { data.append(contentsOf: $0) }
             return data
         }
-        
+
         static func from(_ data: Data) -> PositionPacket? {
             guard data.count == 17, data[0] == 1 else { return nil }
-            let x  = Float(bitPattern: UInt32(bigEndian: data[1...4].withUnsafeBytes  { $0.load(as: UInt32.self) }))
-            let y  = Float(bitPattern: UInt32(bigEndian: data[5...8].withUnsafeBytes  { $0.load(as: UInt32.self) }))
-            let dx = Float(bitPattern: UInt32(bigEndian: data[9...12].withUnsafeBytes { $0.load(as: UInt32.self) }))
-            let dy = Float(bitPattern: UInt32(bigEndian: data[13...16].withUnsafeBytes { $0.load(as: UInt32.self) }))
+            let x  = Float(bitPattern: UInt32(bigEndian: data[1...4].withUnsafeBytes  { $0.loadUnaligned(as: UInt32.self) }))
+            let y  = Float(bitPattern: UInt32(bigEndian: data[5...8].withUnsafeBytes  { $0.loadUnaligned(as: UInt32.self) }))
+            let dx = Float(bitPattern: UInt32(bigEndian: data[9...12].withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) }))
+            let dy = Float(bitPattern: UInt32(bigEndian: data[13...16].withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) }))
             return PositionPacket(type: 1, x: x, y: y, dx: dx, dy: dy)
         }
     }
