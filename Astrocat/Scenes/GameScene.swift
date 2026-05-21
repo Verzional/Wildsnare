@@ -93,15 +93,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self?.remotePlayers.removeValue(forKey: id)
         }
         
-        matchSystem.onRoundStartReceived = { [weak self] _, seed, _ in
-            guard let self = self,
-                  let view = self.view,
+        matchSystem.onRoundStartReceived = { [weak self] roundIndex, seed, _ in
+            guard let self = self, let view = self.view,
                   let nextScene = GameScene(fileNamed: "GameScene") else { return }
             
             nextScene.levelSeed = seed
             nextScene.matchSystem = self.matchSystem
             nextScene.onGameFinished = self.onGameFinished
             nextScene.scaleMode = self.scaleMode
+            nextScene.startingRound = roundIndex + 1 
             
             view.presentScene(nextScene, transition: .fade(withDuration: 0.4))
         }
