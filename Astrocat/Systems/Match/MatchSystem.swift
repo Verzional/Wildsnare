@@ -125,7 +125,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         }
         let msg = GameMessage.finalResults(finalResults: results)
         send(msg, with: .reliable)
-        onFinalResultsReceived?(results)
+
         
         let nextRound = currentRound + 1
         if nextRound < maxRounds {
@@ -285,7 +285,10 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
                 
             case .finalResults:
                 if let results = message.finalResults {
-                    onFinalResultsReceived?(results)
+                    let nextRound = currentRound + 1
+                    if nextRound >= maxRounds {
+                        onFinalResultsReceived?(results) 
+                    }
                 }
             case .roundStart:
                 if let round = message.roundIndex,
