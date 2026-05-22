@@ -41,9 +41,22 @@ extension WinnerAdvantageConfig {
     
     static let advantages: [WinnerAdvantageConfig] = [.first, .second, .third, .none]
     
-    static func forRank(_ rank: Int, playerCount: Int, maxPlayers: Int = 4) -> WinnerAdvantageConfig {
-        let index = maxPlayers - playerCount + rank - 1
-        guard index >= 0 && index < advantages.count else { return .none }
-        return advantages[index]
+    /// Returns advantage for a given rank in a match with up to 16 players.
+    /// Top 25% get first-place boost, next 25% get second, next 25% get third, rest get none.
+    static func forRank(_ rank: Int, playerCount: Int, maxPlayers: Int = 16) -> WinnerAdvantageConfig {
+        guard playerCount > 1, rank >= 1 else { return .none }
+        
+        // Divide players into quartiles
+        let quartileSize = max(1, playerCount / 4)
+        
+        if rank <= quartileSize {
+            return .first
+        } else if rank <= quartileSize * 2 {
+            return .second
+        } else if rank <= quartileSize * 3 {
+            return .third
+        } else {
+            return .none
+        }
     }
 }
