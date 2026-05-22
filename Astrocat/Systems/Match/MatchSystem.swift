@@ -21,7 +21,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     @Published var playerTimes: [String: TimeInterval] = [:]
     
     var match: GKMatch?
-    var readyPlayersIDs = Set<String>()
+    @Published var readyPlayersIDs = Set<String>()
     var hasSentGameStart = false
     private var hasScheduledNextRound = false
     private var readyHeartbeatTimer: Timer?
