@@ -32,6 +32,8 @@ class StunnedState: GKState {
         }
         
         
+        sprite.run(stunnedAnimation, withKey: "playerAnimation")
+
         let url = Bundle.main.url(forResource: "ElectricCoil", withExtension: "wav")
         if let url = url {
             let sound = SKAudioNode(url: url)
