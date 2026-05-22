@@ -42,67 +42,100 @@ struct MatchVictoryScreen: View {
                     .frame(width: geo.size.width, height: geo.size.height)
                     .ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    VStack(spacing: 10) {
-                        Text("\(getDisplayName(for: 0).uppercased()) IS THE FIRST\nCAT ON THE MOON!")
-                            .font(.custom("UpheavalTT-BRK-", size: 48))
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
-                            .shadow(color: Color(red: 120 / 255, green: 92 / 255, blue: 9 / 255), radius: 4, x: 0, y: 3)
-                        
-                        Text("Tap anywhere to go back")
-                            .font(.custom("Dogica", size: 13))
-                            .tracking(-2.0)
-                            .foregroundColor(Color.gray.opacity(0.9))
-                            .padding(.top, 20)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.horizontal, 20)
-                    .padding(.top, geo.size.height * 0.18)
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        VStack(spacing: 10) {
+                            Text("\(getDisplayName(for: 0).uppercased()) IS THE FIRST\nCAT ON THE MOON!")
+                                .font(.custom("UpheavalTT-BRK-", size: 48))
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
+                                .shadow(color: Color(red: 120 / 255, green: 92 / 255, blue: 9 / 255), radius: 4, x: 0, y: 3)
+                            
+                            Text("Tap anywhere to go back")
+                                .font(.custom("Dogica", size: 13))
+                                .tracking(-2.0)
+                                .foregroundColor(Color.gray.opacity(0.9))
+                                .padding(.top, 20)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.horizontal, 20)
+                        .padding(.top, geo.size.height * 0.10)
 
-                    Spacer(minLength: 0)
+                        // Podium for top 3
+                        ZStack(alignment: .bottom) {
+                            Image("Podium")
+                                .resizable()
+                                .interpolation(.none)
+                                .antialiased(false)
+                                .scaledToFit()
+                                .frame(width: geo.size.width)
 
-                    ZStack(alignment: .bottom) {
-                        Image("Podium")
-                            .resizable()
-                            .interpolation(.none)
-                            .antialiased(false)
-                            .scaledToFit()
-                            .frame(width: geo.size.width)
+                            GeometryReader { podiumGeo in
+                                if results.count > 1 {
+                                    WinnerCatView(name: getDisplayName(for: 1).lowercased(), rank: 2)
+                                        .position(x: podiumGeo.size.width * 0.28, y: podiumGeo.size.height * 0.10)
+                                    Text(getTimeString(for: 1))
+                                        .font(.custom("Dogica", size: 11))
+                                        .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
+                                        .position(x: podiumGeo.size.width * 0.28, y: podiumGeo.size.height * 0.44)
+                                }
 
-                        GeometryReader { podiumGeo in
-                            if results.count > 1 {
-                                WinnerCatView(name: getDisplayName(for: 1).lowercased(), rank: 2)
-                                    .position(x: podiumGeo.size.width * 0.28, y: podiumGeo.size.height * 0.10)
-                                Text(getTimeString(for: 1))
-                                    .font(.custom("Dogica", size: 11))
-                                    .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
-                                    .position(x: podiumGeo.size.width * 0.28, y: podiumGeo.size.height * 0.44)
-                            }
+                                if results.count > 0 {
+                                    WinnerCatView(name: getDisplayName(for: 0).lowercased(), rank: 1)
+                                        .position(x: podiumGeo.size.width * 0.50, y: podiumGeo.size.height * -0.02)
+                                    Text(getTimeString(for: 0))
+                                        .font(.custom("Dogica", size: 11))
+                                        .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
+                                        .position(x: podiumGeo.size.width * 0.49, y: podiumGeo.size.height * 0.33)
+                                }
 
-                            if results.count > 0 {
-                                WinnerCatView(name: getDisplayName(for: 0).lowercased(), rank: 1)
-                                    .position(x: podiumGeo.size.width * 0.50, y: podiumGeo.size.height * -0.02)
-                                Text(getTimeString(for: 0))
-                                    .font(.custom("Dogica", size: 11))
-                                    .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
-                                    .position(x: podiumGeo.size.width * 0.49, y: podiumGeo.size.height * 0.33)
-                            }
-
-                            if results.count > 2 {
-                                WinnerCatView(name: getDisplayName(for: 2).lowercased(), rank: 3)
-                                    .position(x: podiumGeo.size.width * 0.72, y: podiumGeo.size.height * 0.22)
-                                Text(getTimeString(for: 2))
-                                    .font(.custom("Dogica", size: 11))
-                                    .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
-                                    .position(x: podiumGeo.size.width * 0.71, y: podiumGeo.size.height * 0.55)
+                                if results.count > 2 {
+                                    WinnerCatView(name: getDisplayName(for: 2).lowercased(), rank: 3)
+                                        .position(x: podiumGeo.size.width * 0.72, y: podiumGeo.size.height * 0.22)
+                                    Text(getTimeString(for: 2))
+                                        .font(.custom("Dogica", size: 11))
+                                        .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
+                                        .position(x: podiumGeo.size.width * 0.71, y: podiumGeo.size.height * 0.55)
+                                }
                             }
                         }
+                        .frame(width: geo.size.width, height: geo.size.height * 0.45)
+
+                        // Full leaderboard for players ranked 4th and beyond
+                        if results.count > 3 {
+                            VStack(spacing: 8) {
+                                ForEach(3..<results.count, id: \.self) { index in
+                                    HStack {
+                                        Text("#\(index + 1)")
+                                            .font(.custom("UpheavalTT-BRK-", size: 22))
+                                            .foregroundColor(.white.opacity(0.7))
+                                            .frame(width: 40, alignment: .leading)
+                                        
+                                        Text(getDisplayName(for: index))
+                                            .font(.custom("Dogica", size: 12))
+                                            .tracking(-1.5)
+                                            .foregroundColor(.white)
+                                            .lineLimit(1)
+                                        
+                                        Spacer()
+                                        
+                                        Text(getTimeString(for: index) + "s")
+                                            .font(.custom("Dogica", size: 11))
+                                            .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06).opacity(0.8))
+                                    }
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 6)
+                                    .background(Color.white.opacity(0.05))
+                                    .cornerRadius(6)
+                                }
+                            }
+                            .padding(.horizontal, 30)
+                            .padding(.top, 10)
+                            .padding(.bottom, 40)
+                        }
                     }
-                    .frame(width: geo.size.width, height: geo.size.height * 0.50)
+                    .frame(maxWidth: .infinity, alignment: .bottom)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .offset(x: -10, y: 50)
             }
             .ignoresSafeArea()
             .contentShape(Rectangle())

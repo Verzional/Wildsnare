@@ -82,8 +82,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     name = p.alias
                 }
 
-                // Remote player colors
-                let coloredVariants: [CatColorVariant] = [.blue, .cream, .fawn]
+                // Remote player colors — use all remote variants for up to 16 players
+                let coloredVariants = CatColorVariant.remoteVariants
                 let stableHash = id.utf8.reduce(0) { ($0 &* 31) &+ Int($1) }
                 let variant = coloredVariants[abs(stableHash) % coloredVariants.count]
                 
