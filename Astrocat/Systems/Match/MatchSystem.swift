@@ -127,7 +127,8 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         
         let sorted = playerTimes.sorted { $0.value < $1.value }
         let results = sorted.map { (id, time) in
-            RaceResult(senderID: id, playerName: id, finishTime: time)
+            let playerName = match?.players.first(where: { $0.gamePlayerID == id })?.alias ?? (id == GKLocalPlayer.local.gamePlayerID ? GKLocalPlayer.local.alias : id)
+            return RaceResult(senderID: id, playerName: playerName, finishTime: time)
         }
         let msg = GameMessage.finalResults(finalResults: results)
         send(msg, with: .reliable)
