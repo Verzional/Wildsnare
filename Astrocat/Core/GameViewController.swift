@@ -30,18 +30,21 @@ class GameViewController: UIViewController {
                 sceneNode.matchSystem = matchSystem
                 
                 sceneNode.onGameFinished = { [weak self] results in
-                    let ms = self?.matchSystem
+                    guard let self = self else { return }
+                    let ms = self.matchSystem
+                    // Capture presentingVC reference before presenting results
+                    // (weak self may be nil by the time user taps dismiss)
+                    weak var presenter = self.presentingViewController
                     let resultsVC = UIHostingController(rootView: MatchVictoryScreen(results: results) {
                         ms?.leaveMatch()
-                        self?.presentingViewController?.dismiss(animated: true) {
+                        // Dismiss the entire presentation stack (resultsVC + GameViewController)
+                        presenter?.dismiss(animated: true) {
                             AudioManager.shared.playBGM(.home)
                         }
                     })
                     resultsVC.modalPresentationStyle = .fullScreen
-                    self?.present(resultsVC, animated: true)
+                    self.present(resultsVC, animated: true)
                 }
-                sceneNode.levelSeed = levelSeed
-                sceneNode.matchSystem = matchSystem
                 
                 if let view = self.view as! SKView? {
                     view.presentScene(sceneNode)
@@ -49,6 +52,17 @@ class GameViewController: UIViewController {
                     view.showsFPS = true
                     view.showsNodeCount = true
                 }
+            }
+        }
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        
+        // Clean up the SKView scene to release GameScene resources
+        if isBeingDismissed || parent == nil {
+            if let skView = self.view as? SKView {
+                skView.presentScene(nil)
             }
         }
     }

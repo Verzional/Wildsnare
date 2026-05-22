@@ -98,10 +98,18 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         hasSentGameStart = false
         hasScheduledNextRound = false
         isHost = false
+        currentRound = 0
         randomSeed = nil
         raceStarted = false
         playerTimes.removeAll()
         matchState = .authenticated
+        
+        // Clear game-scene callbacks to avoid stale references
+        onRoundStartReceived = nil
+        onPlayerUpdateReceived = nil
+        onPlayerFinishedReceived = nil
+        onFinalResultsReceived = nil
+        onPlayerDisconnected = nil
     }
     
     func localPlayerFinished(time: TimeInterval){
@@ -147,6 +155,13 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
             guard let self = self else {
                 print("[MatchSystem] scheduleNextRound(\(index)) — self is nil, MatchSystem deallocated")
+                return
+            }
+            
+            // Bail out if the match was left while the timer was pending
+            guard self.match != nil else {
+                print("[MatchSystem] scheduleNextRound(\(index)) — match is nil, ignoring")
+                self.hasScheduledNextRound = false
                 return
             }
             
