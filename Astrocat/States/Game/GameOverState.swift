@@ -33,9 +33,12 @@ class GameOverState: GKState {
             showMultiplayerOverlay(localTime: time)
             matchSystem.localPlayerFinished(time: time)
         } else {
-            let resultLabel = ResultLabelNode()
-            resultLabel.setFinishTime(time)
-            scene.mainCameraNode.addChild(resultLabel)
+            // Solo Mode
+            let localID = GKLocalPlayer.local.gamePlayerID
+            let localName = GKLocalPlayer.local.alias
+            let results = [RaceResult(senderID: localID, playerName: localName, finishTime: time)]
+            self.scene.isPaused = true
+            self.scene.onGameFinished?(results)
         }
     }
     
