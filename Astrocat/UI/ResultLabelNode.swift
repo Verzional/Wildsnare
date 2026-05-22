@@ -7,13 +7,9 @@
 
 import SpriteKit
 
-class ResultLabelNode: SKLabelNode {
-    override init() {
-        super.init()
-        
-        fontName = "Menlo-Bold"
-        fontSize = 40
-        fontColor = .black
+class ResultLabelNode: OutlinedLabelNode {
+    init() {
+        super.init(fontSize: 48, strokeWidth: 3)
         zPosition = 200
         position = CGPoint(x: 0, y: 0)
     }
@@ -27,7 +23,6 @@ class ResultLabelNode: SKLabelNode {
         let seconds = Int(time) % 60
         let hundredths = Int((time.truncatingRemainder(dividingBy: 1)) * 100)
         
-        _ = ResultLabelNode()
         text = String(format: "Finish! %d:%02d.%02d", minutes, seconds, hundredths)
     }
 }
