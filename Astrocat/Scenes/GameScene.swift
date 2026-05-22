@@ -74,8 +74,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                   let y = message.playerY else { return }
             
             if self.remotePlayers[id] == nil {
-                let name = message.playerName ?? "Player"
+                let fallbackName = "Player"
+                var name = message.playerName?.isEmpty == false ? message.playerName! : fallbackName
                 
+                // fallback to game alias if needed
+                if name == fallbackName, let p = self.matchSystem?.match?.players.first(where: { $0.gamePlayerID == id }) {
+                    name = p.alias
+                }
+
                 // Remote player colors
                 let coloredVariants: [CatColorVariant] = [.blue, .cream, .fawn]
                 let stableHash = id.utf8.reduce(0) { ($0 &* 31) &+ Int($1) }

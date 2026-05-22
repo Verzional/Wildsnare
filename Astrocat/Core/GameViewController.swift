@@ -31,14 +31,12 @@ class GameViewController: UIViewController {
                 
                 sceneNode.onGameFinished = { [weak self] results in
                     let ms = self?.matchSystem
-                    let resultsVC = UIHostingController(rootView:
-                                                            ResultsView(results: results) {
+                    let resultsVC = UIHostingController(rootView: MatchVictoryScreen(results: results) {
                         ms?.leaveMatch()
                         self?.presentingViewController?.dismiss(animated: true) {
                             AudioManager.shared.playBGM(.home)
                         }
-                    }
-                    )
+                    })
                     resultsVC.modalPresentationStyle = .fullScreen
                     self?.present(resultsVC, animated: true)
                 }

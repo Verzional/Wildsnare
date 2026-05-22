@@ -57,7 +57,8 @@ class GameOverState: GKState {
         
         if let playerTimes = scene.matchSystem?.playerTimes {
             for (id, time) in playerTimes where id != localID {
-                finishedPlayers.append((name: id, time: time))
+                let name = scene.matchSystem?.match?.players.first(where: { $0.gamePlayerID == id })?.alias ?? "Player"
+                finishedPlayers.append((name: name, time: time))
             }
         }
         finishedPlayers.sort { $0.time < $1.time }
@@ -66,8 +67,13 @@ class GameOverState: GKState {
         // Add new players as they finish
         scene.matchSystem?.onPlayerFinishedReceived = { [weak self] message in
             guard let self = self, let overlay = self.overlay else { return }
-            if let finishTime = message.finishTime {
-                let name = message.playerName ?? message.senderID ?? "Player"
+            if let finishTime = message.finishTime, let id = message.senderID {
+                let fallbackName = "Player"
+                var name = message.playerName?.isEmpty == false ? message.playerName! : fallbackName
+                if name == fallbackName, let p = self.scene.matchSystem?.match?.players.first(where: { $0.gamePlayerID == id }) {
+                    name = p.alias
+                }
+                
                 // Avoid duplicates
                 if !self.finishedPlayers.contains(where: { $0.time == finishTime && $0.name == name }) {
                     self.finishedPlayers.append((name: name, time: finishTime))
