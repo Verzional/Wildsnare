@@ -76,7 +76,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         case .multiplayer:
             let request = GKMatchRequest()
             request.minPlayers = 2
-            request.maxPlayers = 4
+            request.maxPlayers = 16
             request.inviteMessage = "Race me in Astrocat! 🚀"
 
             guard let vc = GKMatchmakerViewController(matchRequest: request) else { return }
