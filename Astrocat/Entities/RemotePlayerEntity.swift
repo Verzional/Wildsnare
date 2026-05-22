@@ -3,7 +3,7 @@ import GameplayKit
 
 class RemotePlayerEntity: GKEntity {
     let node: SKSpriteNode
-    private let nameLabel: SKLabelNode
+    private let nameLabel: OutlinedLabelNode
     private let skinPrefix: String
     private var currentAnimationKey: String = ""
     
@@ -19,13 +19,16 @@ class RemotePlayerEntity: GKEntity {
         node.texture?.filteringMode = .nearest
         node.shader = colorVariant.makeShader()
         
-        nameLabel = SKLabelNode(text: displayName)
-        nameLabel.fontName = "UpheavalTT-BRK-"
-        nameLabel.fontSize = 14
-        nameLabel.fontColor = .white
+        nameLabel = OutlinedLabelNode(
+            fontName: "UpheavalTT-BRK-",
+            fontSize: 14,
+            strokeWidth: 1.5,
+            fillColor: .white,
+            outlineColor: SKColor(red: 0, green: 16.0/255.0, blue: 75.0/255.0, alpha: 1.0)
+        )
         nameLabel.position = CGPoint(x: 0, y: 44)
         nameLabel.zPosition = 2
-        nameLabel.horizontalAlignmentMode = .center
+        nameLabel.text = displayName
         
         super.init()
         node.addChild(nameLabel)
