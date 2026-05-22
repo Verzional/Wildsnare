@@ -27,6 +27,7 @@ class GameOverState: GKState {
         scene.isPlayerInputEnabled = false
         
         let time = scene.gameState?.raceTime ?? 0
+        print("[GameOverState] didEnter: round=\(scene.gameState?.currentRound ?? -1), time=\(time), isMultiplayer=\(scene.matchSystem != nil)")
         
         if let matchSystem = scene.matchSystem {
             showMultiplayerOverlay(localTime: time)
@@ -77,12 +78,22 @@ class GameOverState: GKState {
         }
         
         // Update status when all results are in
-        let previousHandler = scene.matchSystem?.onFinalResultsReceived
         scene.matchSystem?.onFinalResultsReceived = { [weak self] results in
-            guard let self = self, let overlay = self.overlay else { return }
-            let isLast = (self.scene.gameState?.currentRound ?? 1) >= (self.scene.gameState?.totalRounds ?? 3)
+            guard let self = self, let overlay = self.overlay else {
+                print("[GameOverState] onFinalResultsReceived: self or overlay is nil")
+                return
+            }
+            let currentRound = self.scene.gameState?.currentRound ?? 1
+            let totalRounds = self.scene.gameState?.totalRounds ?? 3
+            let isLast = currentRound >= totalRounds
+            print("[GameOverState] onFinalResultsReceived: round=\(currentRound)/\(totalRounds), isLast=\(isLast)")
             overlay.setStatus(isLast ? "Final Results" : "Loading next round...")
-            previousHandler?(results)
+            
+            // Only show ResultsView on the final round
+            if isLast {
+                self.scene.isPaused = true
+                self.scene.onGameFinished?(results)
+            }
         }
     }
 }

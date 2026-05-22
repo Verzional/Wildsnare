@@ -63,7 +63,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private func setupMultiplayer() {
         guard let matchSystem = matchSystem else { return }
         
-        // Ensure state is inGame for the new round
+        print("[GameScene] setupMultiplayer: round=\(gameState?.currentRound ?? -1), matchState=\(matchSystem.matchState)")
         matchSystem.matchState = .inGame
         matchSystem.onPlayerFinishedReceived = nil
         
@@ -100,16 +100,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         matchSystem.onRoundStartReceived = { [weak self] roundIndex, seed, _ in
+            print("[GameScene] onRoundStartReceived: roundIndex=\(roundIndex), self=\(self == nil ? "nil" : "alive"), view=\(self?.view == nil ? "nil" : "alive")")
             guard let self = self, let view = self.view,
-                  let nextScene = GameScene(fileNamed: "GameScene") else { return }
+                  let nextScene = GameScene(fileNamed: "GameScene") else {
+                print("[GameScene] onRoundStartReceived: guard FAILED")
+                return
+            }
             
             nextScene.levelSeed = seed
             nextScene.matchSystem = self.matchSystem
             nextScene.onGameFinished = self.onGameFinished
             nextScene.scaleMode = self.scaleMode
             nextScene.startingRound = roundIndex + 1
+            print("[GameScene] Transitioning to round \(roundIndex + 1)")
             
-            // Clean up remote players from current scene
             for (_, remote) in self.remotePlayers {
                 remote.removeFromScene()
             }
@@ -118,15 +122,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             view.presentScene(nextScene, transition: .fade(withDuration: 0.4))
         }
         
-        matchSystem.onFinalResultsReceived = { [weak self] results in
-            guard let self = self else { return }
-            let currentRound = self.gameState?.currentRound ?? 1
-            let totalRounds = self.gameState?.totalRounds ?? 3
-            if currentRound >= totalRounds {
-                self.isPaused = true
-                self.onGameFinished?(results)
-            }
-        }
+        matchSystem.onFinalResultsReceived = nil
     }
     
     private func broadcastLocalPosition() {

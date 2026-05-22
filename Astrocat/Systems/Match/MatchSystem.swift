@@ -23,6 +23,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     var match: GKMatch?
     var readyPlayersIDs = Set<String>()
     var hasSentGameStart = false
+    private var hasScheduledNextRound = false
     private var readyHeartbeatTimer: Timer?
     private var hostStartTimeoutTimer: Timer?
     
@@ -96,6 +97,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         
         readyPlayersIDs.removeAll()
         hasSentGameStart = false
+        hasScheduledNextRound = false
         isHost = false
         randomSeed = nil
         raceStarted = false
@@ -107,6 +109,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         let localID = GKLocalPlayer.local.gamePlayerID
         _ = GKLocalPlayer.local.alias
         playerTimes[localID] = time
+        print("[MatchSystem] localPlayerFinished: time=\(time), currentRound=\(currentRound), playerTimes=\(playerTimes.count)")
         
         let msg = GameMessage.playerFinished(senderID: localID, finishTime: time)
         send(msg, with: .reliable)
@@ -115,9 +118,13 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     }
     
     private func checkAndBroadcastFinalResults() {
-        guard isHost else { return }
         let expectedCount = (match?.players.count ?? 0) + 1
+        print("[MatchSystem] checkAndBroadcastFinalResults: isHost=\(isHost), hasScheduled=\(hasScheduledNextRound), playerTimes=\(playerTimes.count)/\(expectedCount)")
+        guard isHost, !hasScheduledNextRound else { return }
         guard playerTimes.count >= expectedCount else { return }
+        
+        hasScheduledNextRound = true
+        print("[MatchSystem] All players finished round \(currentRound). Broadcasting results.")
         
         let sorted = playerTimes.sorted { $0.value < $1.value }
         let results = sorted.map { (id, time) in
@@ -128,6 +135,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         onFinalResultsReceived?(results)
         
         let nextRound = currentRound + 1
+        print("[MatchSystem] nextRound=\(nextRound), maxRounds=\(maxRounds), willSchedule=\(nextRound < maxRounds)")
         if nextRound < maxRounds {
             scheduleNextRound(index: nextRound)
         }
@@ -135,9 +143,16 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     
     // MARK: Next Round Scheduling
     private func scheduleNextRound(index: Int) {
+        print("[MatchSystem] scheduleNextRound(\(index)) — will fire in 3s")
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
-            guard let self = self else { return }
+            guard let self = self else {
+                print("[MatchSystem] scheduleNextRound(\(index)) — self is nil, MatchSystem deallocated")
+                return
+            }
             
+            print("[MatchSystem] Firing roundStart for index=\(index), onRoundStartReceived is \(self.onRoundStartReceived == nil ? "nil" : "set")")
+            
+            self.hasScheduledNextRound = false
             self.playerTimes.removeAll()
             self.readyPlayersIDs.removeAll()
             self.hasSentGameStart = false
@@ -157,6 +172,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             self.send(msg, with: .reliable)
             
             self.onRoundStartReceived?(index, seed, epoch)
+            print("[MatchSystem] roundStart sent and onRoundStartReceived called for index=\(index)")
         }
     }
     
@@ -275,6 +291,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             case .playerFinished:
                 if let id = message.senderID, let time = message.finishTime {
                     playerTimes[id] = time
+                    print("[MatchSystem] Received playerFinished from \(id), time=\(time), playerTimes=\(playerTimes.count)")
                 }
                 var enriched = message
                 enriched.playerName = player.displayName
@@ -286,12 +303,14 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
                 
             case .finalResults:
                 if let results = message.finalResults {
+                    print("[MatchSystem] Received finalResults, count=\(results.count), onFinalResultsReceived is \(onFinalResultsReceived == nil ? "nil" : "set")")
                     onFinalResultsReceived?(results)
                 }
             case .roundStart:
                 if let round = message.roundIndex,
                    let seed = message.randomSeed,
                    let epoch = message.startTimeEpoch {
+                    print("[MatchSystem] Received roundStart: round=\(round), onRoundStartReceived is \(onRoundStartReceived == nil ? "nil" : "set")")
                     playerTimes.removeAll()
                     readyPlayersIDs.removeAll()
                     hasSentGameStart = false
