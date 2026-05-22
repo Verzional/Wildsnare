@@ -109,7 +109,7 @@ class LevelGenerator {
         
         let playerHalfHeight: CGFloat = 32 // 64x64
         
-        let debugStartAtTop = true
+        let debugStartAtTop = false
         
         let startPositions: [CGPoint]
         
