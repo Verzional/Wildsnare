@@ -87,8 +87,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
 
     
     func leaveMatch() {
-        readyHeartbeatTimer?.invalidate()
-        readyHeartbeatTimer = nil
+        stopReadyHeartbeat()
         hostStartTimeoutTimer?.invalidate()
         hostStartTimeoutTimer = nil
         
@@ -155,7 +154,6 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             self.hasScheduledNextRound = false
             self.playerTimes.removeAll()
             self.readyPlayersIDs.removeAll()
-            self.hasSentGameStart = false
             self.currentRound = index
             self.matchState = .inGame
             
@@ -186,6 +184,11 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             }
         }
     }
+
+    private func stopReadyHeartbeat() {
+        readyHeartbeatTimer?.invalidate()
+        readyHeartbeatTimer = nil
+    }
     
     func sendReadyHeartbeat(){
         let localID = GKLocalPlayer.local.gamePlayerID
@@ -195,7 +198,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
     
     // MARK: Host Start Logic
     func tryStartIfHost(){
-        guard isHost, match != nil, !hasSentGameStart else { return }
+        guard isHost, match != nil, !hasSentGameStart, matchState == .inLobby else { return }
         
         scheduleHostStartTimeout()
         
@@ -229,6 +232,7 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
         self.randomSeed = seed
         hasSentGameStart = true
         matchState = .inGame
+        stopReadyHeartbeat()
         send(GameMessage.gameStart(randomSeed: seed), with: .reliable)
         
         onStartMultiplayer?()
@@ -280,8 +284,10 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
             
             switch message.messageType {
             case .gameStart:
+                guard matchState != .inGame else { return }
                 randomSeed = message.randomSeed
                 matchState = .inGame
+                stopReadyHeartbeat()
                 onStartMultiplayer?()
             case .playerReady:
                 if !readyPlayersIDs.contains(player.gamePlayerID){
@@ -313,7 +319,6 @@ class MatchSystem: NSObject, ObservableObject, GKMatchDelegate, GKLocalPlayerLis
                     print("[MatchSystem] Received roundStart: round=\(round), onRoundStartReceived is \(onRoundStartReceived == nil ? "nil" : "set")")
                     playerTimes.removeAll()
                     readyPlayersIDs.removeAll()
-                    hasSentGameStart = false
                     currentRound = round
                     randomSeed = seed
                     onRoundStartReceived?(round, seed, epoch)
