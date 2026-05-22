@@ -12,7 +12,7 @@ class RoundTransitionOverlay: SKNode {
     private var playerRows: [SKNode] = []
     
     override init() {
-        background = SKSpriteNode(color: SKColor.black.withAlphaComponent(0.7), size: CGSize(width: 800, height: 1200))
+        background = SKSpriteNode(color: SKColor.black.withAlphaComponent(0.7), size: CGSize(width: 2000, height: 2000))
         background.zPosition = 0
         
         titleLabel = OutlinedLabelNode(fontSize: 48, strokeWidth: 3)

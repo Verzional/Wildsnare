@@ -12,13 +12,15 @@ import GameplayKit
 
 class GameViewController: UIViewController {
     var levelSeed: UInt64?
-    
-    
     var matchSystem: MatchSystem?
     
+    private var loadingOverlay: UIView?
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Show loading overlay immediately
+        showLoadingOverlay()
         
         if let scene = GKScene(fileNamed: "GameScene") {
             if let sceneNode = scene.rootNode as! GameScene? {
@@ -28,6 +30,10 @@ class GameViewController: UIViewController {
                 sceneNode.scaleMode = .aspectFill
                 sceneNode.levelSeed = levelSeed
                 sceneNode.matchSystem = matchSystem
+                
+                sceneNode.onSceneReady = { [weak self] in
+                    self?.hideLoadingOverlay()
+                }
                 
                 sceneNode.onGameFinished = { [weak self] results in
                     guard let self = self else { return }
@@ -55,6 +61,63 @@ class GameViewController: UIViewController {
             }
         }
     }
+    
+    // MARK: - Loading Overlay
+    
+    private func showLoadingOverlay() {
+        let overlay = UIView(frame: view.bounds)
+        overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        overlay.backgroundColor = UIColor(red: 0.02, green: 0.02, blue: 0.08, alpha: 1.0)
+        
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = 20
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Cat image
+        let catImage = UIImageView(image: UIImage(named: "CatAstronaut"))
+        catImage.contentMode = .scaleAspectFit
+        catImage.translatesAutoresizingMaskIntoConstraints = false
+        catImage.heightAnchor.constraint(equalToConstant: 100).isActive = true
+        catImage.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        
+        // Floating animation
+        UIView.animate(withDuration: 1.5, delay: 0, options: [.autoreverse, .repeat, .curveEaseInOut]) {
+            catImage.transform = CGAffineTransform(translationX: 0, y: -12)
+        }
+        
+        // Loading label
+        let label = UILabel()
+        label.text = "LOADING..."
+        label.font = UIFont(name: "UpheavalTT-BRK-", size: 28)
+        label.textColor = UIColor(red: 1.0, green: 0.80, blue: 0.06, alpha: 1.0)
+        label.textAlignment = .center
+        
+        stack.addArrangedSubview(catImage)
+        stack.addArrangedSubview(label)
+        overlay.addSubview(stack)
+        
+        NSLayoutConstraint.activate([
+            stack.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
+            stack.centerYAnchor.constraint(equalTo: overlay.centerYAnchor)
+        ])
+        
+        view.addSubview(overlay)
+        self.loadingOverlay = overlay
+    }
+    
+    private func hideLoadingOverlay() {
+        guard let overlay = loadingOverlay else { return }
+        UIView.animate(withDuration: 0.4, animations: {
+            overlay.alpha = 0
+        }) { _ in
+            overlay.removeFromSuperview()
+        }
+        self.loadingOverlay = nil
+    }
+    
+    // MARK: - Lifecycle
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)

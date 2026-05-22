@@ -56,6 +56,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var remotePlayers: [String: RemotePlayerEntity] = [:]
     var matchSystem: MatchSystem?
     var onGameFinished: (([RaceResult]) -> Void)?
+    var onSceneReady: (() -> Void)?
     
     private var lastBroadcastTime: TimeInterval = 0
     private let broadcastInterval: TimeInterval = 1.0 / 20.0  // 20Hz
@@ -116,6 +117,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             nextScene.levelSeed = seed
             nextScene.matchSystem = self.matchSystem
             nextScene.onGameFinished = self.onGameFinished
+            nextScene.onSceneReady = self.onSceneReady
             nextScene.scaleMode = self.scaleMode
             nextScene.startingRound = roundIndex + 1
             print("[GameScene] Transitioning to round \(roundIndex + 1)")
@@ -608,6 +610,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupMultiplayer()
         
         gameState?.stateMachine.enter(CountdownState.self)
+        onSceneReady?()
     }
     
     // MARK: - Round
