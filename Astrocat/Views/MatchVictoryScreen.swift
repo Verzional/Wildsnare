@@ -9,6 +9,20 @@ import SwiftUI
 import UIKit
 
 struct MatchVictoryScreen: View {
+    var results: [RaceResult] = []
+    var onDismiss: (() -> Void)? = nil
+
+    private func getDisplayName(for index: Int) -> String {
+        guard index < results.count else { return "" }
+        let result = results[index]
+        return result.playerName.isEmpty ? "Player \(index + 1)" : result.playerName
+    }
+
+    private func getTimeString(for index: Int) -> String {
+        guard index < results.count else { return "" }
+        return String(format: "%.2f", results[index].finishTime)
+    }
+
     var body: some View {
         GeometryReader { geo in
             ZStack {
@@ -30,7 +44,7 @@ struct MatchVictoryScreen: View {
 
                 VStack(spacing: 0) {
                     VStack(spacing: 10) {
-                        Text("ANDREW IS THE FIRST\nCAT ON THE MOON!")
+                        Text("\(getDisplayName(for: 0).uppercased()) IS THE FIRST\nCAT ON THE MOON!")
                             .font(.custom("UpheavalTT-BRK-", size: 48))
                             .multilineTextAlignment(.center)
                             .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
@@ -57,29 +71,32 @@ struct MatchVictoryScreen: View {
                             .frame(width: geo.size.width)
 
                         GeometryReader { podiumGeo in
-                            WinnerCatView(name: "manda", rank: 2)
-                                .position(x: podiumGeo.size.width * 0.28, y: podiumGeo.size.height * 0.10)
+                            if results.count > 1 {
+                                WinnerCatView(name: getDisplayName(for: 1).lowercased(), rank: 2)
+                                    .position(x: podiumGeo.size.width * 0.28, y: podiumGeo.size.height * 0.10)
+                                Text(getTimeString(for: 1))
+                                    .font(.custom("Dogica", size: 11))
+                                    .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
+                                    .position(x: podiumGeo.size.width * 0.28, y: podiumGeo.size.height * 0.44)
+                            }
 
-                            WinnerCatView(name: "andrew", rank: 1)
-                                .position(x: podiumGeo.size.width * 0.50, y: podiumGeo.size.height * -0.02)
+                            if results.count > 0 {
+                                WinnerCatView(name: getDisplayName(for: 0).lowercased(), rank: 1)
+                                    .position(x: podiumGeo.size.width * 0.50, y: podiumGeo.size.height * -0.02)
+                                Text(getTimeString(for: 0))
+                                    .font(.custom("Dogica", size: 11))
+                                    .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
+                                    .position(x: podiumGeo.size.width * 0.49, y: podiumGeo.size.height * 0.33)
+                            }
 
-                            WinnerCatView(name: "arya", rank: 3)
-                                .position(x: podiumGeo.size.width * 0.72, y: podiumGeo.size.height * 0.22)
-
-                            Text("80.00")
-                                .font(.custom("Dogica", size: 11))
-                                .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
-                                .position(x: podiumGeo.size.width * 0.28, y: podiumGeo.size.height * 0.44)
-
-                            Text("50.00")
-                                .font(.custom("Dogica", size: 11))
-                                .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
-                                .position(x: podiumGeo.size.width * 0.49, y: podiumGeo.size.height * 0.33)
-
-                            Text("100.00")
-                                .font(.custom("Dogica", size: 11))
-                                .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
-                                .position(x: podiumGeo.size.width * 0.71, y: podiumGeo.size.height * 0.55)
+                            if results.count > 2 {
+                                WinnerCatView(name: getDisplayName(for: 2).lowercased(), rank: 3)
+                                    .position(x: podiumGeo.size.width * 0.72, y: podiumGeo.size.height * 0.22)
+                                Text(getTimeString(for: 2))
+                                    .font(.custom("Dogica", size: 11))
+                                    .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
+                                    .position(x: podiumGeo.size.width * 0.71, y: podiumGeo.size.height * 0.55)
+                            }
                         }
                     }
                     .frame(width: geo.size.width, height: geo.size.height * 0.50)
@@ -90,7 +107,11 @@ struct MatchVictoryScreen: View {
             .ignoresSafeArea()
             .contentShape(Rectangle())
             .onTapGesture {
-                navigateToMatchmakingScreen()
+                if let onDismiss = onDismiss {
+                    onDismiss()
+                } else {
+                    navigateToMatchmakingScreen()
+                }
             }
         }
     }
