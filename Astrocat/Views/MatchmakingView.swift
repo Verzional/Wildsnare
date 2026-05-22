@@ -75,9 +75,16 @@ struct MatchmakingView: View {
                     .padding(.bottom, 65)
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
+
+                // MARK: - Lobby Loading Overlay
+                if matchSystem.matchState == .inLobby {
+                    MatchLobbyOverlay(playerCount: matchSystem.readyPlayersIDs.count)
+                        .transition(.opacity)
+                }
             }
         }
         .ignoresSafeArea()
+        .animation(.easeInOut(duration: 0.3), value: matchSystem.matchState)
     }
 }
 
