@@ -29,11 +29,11 @@ class TrapComponent: GKComponent {
     }
     
     // Black Hole
-    var radius: CGFloat = 150.0
+    var radius: CGFloat = 200.0
     var pullForce: CGFloat = 1000.0
     
     // Force Field
-    var impulseForce: CGFloat = 100.0
+    var impulseForce: CGFloat = 150.0
     var repelDuration: TimeInterval = 1.0
     
     // Purple Slime, Electric Coil & Comet Dust
