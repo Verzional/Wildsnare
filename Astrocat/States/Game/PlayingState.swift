@@ -11,6 +11,8 @@ import SpriteKit
 class PlayingState: GKState {
     unowned let scene: GameScene
     
+    private let maxRoundTime: TimeInterval = 150.0
+    
     init(scene: GameScene) {
         self.scene = scene
         super.init()
@@ -29,5 +31,10 @@ class PlayingState: GKState {
         guard let gameState = scene.gameState else { return }
         gameState.raceTime += seconds
         scene.timerLabel.updateTime(gameState.raceTime)
+        
+        // Force-finish if time limit exceeded
+        if gameState.raceTime >= maxRoundTime {
+            stateMachine?.enter(RoundOverState.self)
+        }
     }
 }
