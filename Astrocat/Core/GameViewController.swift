@@ -40,7 +40,7 @@ class GameViewController: UIViewController {
                     let ms = self.matchSystem
                     // Capture presentingVC reference before presenting results
                     // (weak self may be nil by the time user taps dismiss)
-                    weak var presenter = self.presentingViewController
+                    weak let presenter = self.presentingViewController
                     let resultsVC = UIHostingController(rootView: MatchVictoryScreen(results: results) {
                         ms?.leaveMatch()
                         // Dismiss the entire presentation stack (resultsVC + GameViewController)

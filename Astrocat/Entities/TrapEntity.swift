@@ -39,6 +39,7 @@ class TrapEntity: GKEntity {
         switch type {
         case .blackHole:
             addComponent(BlackHoleSystem())
+            node.zPosition = 0
         case .forceField:
             addComponent(ForceFieldSystem())
         case .purpleSlime:

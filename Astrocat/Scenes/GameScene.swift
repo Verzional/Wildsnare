@@ -408,12 +408,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             textureName = "BH-Frame-1"
             atlasName = "BlackHole"
             prefix = "BH"
-            size = CGSize(width: 128, height: 128)
+            size = CGSize(width: 192, height: 192)
         case .forceField:
             textureName = "FF-Frame-1"
             atlasName = "ForceField"
             prefix = "FF"
-            size = CGSize(width: 64, height: 64)
+            size = CGSize(width: 256, height: 256)
         case .purpleSlime:
             textureName = "PS-Frame-1"
             atlasName = "PurpleSlime"
