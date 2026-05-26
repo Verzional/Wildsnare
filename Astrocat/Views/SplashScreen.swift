@@ -195,9 +195,9 @@ struct SplashScreenView: View {
     }
 }
 
-// MARK: - Preview
-#Preview {
-    SplashScreenView {
-        print("Splash finished!")
-    }
-}
+//// MARK: - Preview
+//#Preview {
+//    SplashScreenView {
+//        
+//    }
+//}
