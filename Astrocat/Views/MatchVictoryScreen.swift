@@ -11,6 +11,8 @@ import UIKit
 struct MatchVictoryScreen: View {
     var results: [RaceResult] = []
     var onDismiss: (() -> Void)? = nil
+    
+    @State private var isContinuePromptGlowing = false
 
     private func getDisplayName(for index: Int) -> String {
         guard index < results.count else { return "" }
@@ -54,11 +56,29 @@ struct MatchVictoryScreen: View {
                             .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.06))
                             .shadow(color: Color(red: 120 / 255, green: 92 / 255, blue: 9 / 255), radius: 4, x: 0, y: 3)
                         
-                        Text("Tap anywhere to go back")
+                        Text("Tap anywhere to continue")
                             .font(.custom("Dogica", size: 13))
                             .tracking(-2.0)
-                            .foregroundColor(Color.gray.opacity(0.9))
+                            .foregroundColor(isContinuePromptGlowing ? Color(red: 1.0, green: 0.88, blue: 0.18) : Color.white.opacity(0.78))
+                            .shadow(
+                                color: Color(red: 1.0, green: 0.80, blue: 0.06).opacity(isContinuePromptGlowing ? 0.95 : 0.15),
+                                radius: isContinuePromptGlowing ? 2 : 0,
+                                x: 0,
+                                y: 0
+                            )
+                            .shadow(
+                                color: Color(red: 1.0, green: 0.80, blue: 0.06).opacity(isContinuePromptGlowing ? 0.45 : 0),
+                                radius: isContinuePromptGlowing ? 7 : 0,
+                                x: 0,
+                                y: 0
+                            )
+                            .opacity(isContinuePromptGlowing ? 1.0 : 0.68)
                             .padding(.top, 20)
+                            .onAppear {
+                                withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+                                    isContinuePromptGlowing = true
+                                }
+                            }
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.horizontal, 20)
@@ -147,45 +167,6 @@ private struct WinnerCatView: View {
 }
 
 private struct ConfettiLayer: View {
-    //    let isAnimating: Bool
-    //
-    //    private let colors: [Color] = [
-    //        Color(red: 1.0, green: 0.35, blue: 0.18),
-    //        Color(red: 0.16, green: 0.67, blue: 1.0),
-    //        Color(red: 1.0, green: 0.85, blue: 0.1),
-    //        Color(red: 0.3, green: 0.93, blue: 0.42),
-    //        Color(red: 0.95, green: 0.28, blue: 0.92)
-    //    ]
-    //
-    //    var body: some View {
-    //        GeometryReader { geo in
-    //            ZStack {
-    //                ForEach(0..<26, id: \.self) { index in
-    //                    Capsule()
-    //                        .fill(colors[index % colors.count])
-    //                        .frame(width: CGFloat(8 + (index % 5) * 2), height: 4)
-    //                        .rotationEffect(.degrees(isAnimating ? Double(180 + (index * 18)) : Double(index * 15)))
-    //                        .position(
-    //                            x: geo.size.width * normalizedX(index: index),
-    //                            y: geo.size.height * normalizedY(index: index, isAnimating: isAnimating)
-    //                        )
-    //                        .opacity(0.9)
-    //                }
-    //            }
-    //        }
-    //        .allowsHitTesting(false)
-    //    }
-    //
-    //    private func normalizedX(index: Int) -> CGFloat {
-    //        let row = index % 7
-    //        let lane = CGFloat(row) / 6.0
-    //        return 0.08 + (0.84 * lane)
-    //    }
-    //
-    //    private func normalizedY(index: Int, isAnimating: Bool) -> CGFloat {
-    //        let base = 0.08 + (CGFloat(index / 7) * 0.11)
-    //        return isAnimating ? base + 0.03 : base
-    //    }
     @State private var particles: [ConfettiParticle] = []
     @State private var timer: Timer?
     
