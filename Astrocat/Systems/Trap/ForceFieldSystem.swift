@@ -33,7 +33,7 @@ class ForceFieldSystem: GKComponent, TrapProtocol {
                 repelled.duration = trapData.repelDuration
                 
                 let forceVector = CGVector(dx: -(dx / distance) * trapData.impulseForce,
-                                           dy: -(dy / distance) * trapData.impulseForce)
+                                           dy: -(dy / distance) * trapData.impulseForce * 1.5)
                 
                 playerNode.physicsBody?.applyImpulse(forceVector)
             }
