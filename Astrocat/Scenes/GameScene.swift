@@ -408,7 +408,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             textureName = "BH-Frame-1"
             atlasName = "BlackHole"
             prefix = "BH"
-            size = CGSize(width: 192, height: 192)
+            size = CGSize(width: 256, height: 256)
         case .forceField:
             textureName = "FF-Frame-1"
             atlasName = "ForceField"
