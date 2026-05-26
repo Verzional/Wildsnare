@@ -3,7 +3,6 @@
 //  Astrocat
 //
 //  Created by Valentino Manuel Gunawan on 30/04/26.
-//  test
 
 import SpriteKit
 import GameplayKit
@@ -51,6 +50,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let timerLabel = RaceTimerNode()
     var currentRoundConfig: RoundConfig = .earth
     var startingRound: Int = 1
+    var pendingWinnerAdvantage: WinnerAdvantageConfig = .none
     
     // Multiplayer Systems
     var remotePlayers: [String: RemotePlayerEntity] = [:]
@@ -64,7 +64,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private func setupMultiplayer() {
         guard let matchSystem = matchSystem else { return }
         
-        print("[GameScene] setupMultiplayer: round=\(gameState?.currentRound ?? -1), matchState=\(matchSystem.matchState)")
         matchSystem.matchState = .inGame
         matchSystem.onPlayerFinishedReceived = nil
         
@@ -107,12 +106,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         matchSystem.onRoundStartReceived = { [weak self] roundIndex, seed, _ in
-            print("[GameScene] onRoundStartReceived: roundIndex=\(roundIndex), self=\(self == nil ? "nil" : "alive"), view=\(self?.view == nil ? "nil" : "alive")")
             guard let self = self, let view = self.view,
-                  let nextScene = GameScene(fileNamed: "GameScene") else {
-                print("[GameScene] onRoundStartReceived: guard FAILED")
-                return
-            }
+                  let nextScene = GameScene(fileNamed: "GameScene") else { return }
             
             nextScene.levelSeed = seed
             nextScene.matchSystem = self.matchSystem
@@ -120,7 +115,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             nextScene.onSceneReady = self.onSceneReady
             nextScene.scaleMode = self.scaleMode
             nextScene.startingRound = roundIndex + 1
-            print("[GameScene] Transitioning to round \(roundIndex + 1)")
+            nextScene.pendingWinnerAdvantage = self.pendingWinnerAdvantage
             
             for (_, remote) in self.remotePlayers {
                 remote.removeFromScene()
@@ -139,17 +134,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
               let node = player?.component(ofType: GKSKNodeComponent.self)?.node,
               let body = node.physicsBody else { return }
         
-        let localID = GKLocalPlayer.local.gamePlayerID
-        let localName = GKLocalPlayer.local.alias
-        let msg = GameMessage.playerUpdate(
-            senderID: localID,
-            playerName: localName,
+        matchSystem.sendPlayerPositionUpdate(
             playerX: node.position.x,
             playerY: node.position.y,
             playerDX: body.velocity.dx,
             playerDY: body.velocity.dy
         )
-        matchSystem.sendPlayerUpdate(msg)
     }
     
     var playerInput: InputComponent? {
@@ -576,6 +566,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         run(SKAction.sequence([wait, reset]), withKey: "advantageTimer")
     }
     
+    func applyPendingWinnerAdvantage() {
+        let advantage = pendingWinnerAdvantage
+        pendingWinnerAdvantage = .none
+        applyWinnerAdvantage(advantage)
+    }
+    
     func resetPlayerStats() {
         guard let movement = player?.component(ofType: MovementComponent.self) else { return }
         movement.speed = MovementComponent.defaultSpeed
@@ -742,7 +738,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         body.collisionBitMask = collisionMask
     }
     
-        // AFTER
     override func update(_ currentTime: TimeInterval) {
         if lastUpdateTime == 0 { lastUpdateTime = currentTime }
         let dt = currentTime - lastUpdateTime

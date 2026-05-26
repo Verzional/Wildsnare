@@ -25,6 +25,7 @@ class PlayingState: GKState {
     override func didEnter(from previousState: GKState?) {
         scene.isPlayerInputEnabled = true
         scene.gameState?.raceTime = 0
+        scene.applyPendingWinnerAdvantage()
     }
     
     override func update(deltaTime seconds: TimeInterval) {

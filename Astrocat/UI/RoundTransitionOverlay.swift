@@ -101,45 +101,4 @@ class RoundTransitionOverlay: SKNode {
         }
     }
     
-    /// Add a single player finish entry live (supports up to 16 players)
-    func addPlayerFinish(name: String, time: TimeInterval, rank: Int) {
-        guard rank <= 16 else { return }
-        
-        let totalExpected = playerRows.count + 1
-        let fontSize: CGFloat = totalExpected > 8 ? 20 : (totalExpected > 4 ? 24 : 28)
-        let rowHeight: CGFloat = totalExpected > 8 ? 34 : (totalExpected > 4 ? 40 : 50)
-        let strokeWidth: CGFloat = totalExpected > 8 ? 1.5 : 2
-        
-        let row = SKNode()
-        row.zPosition = 1
-        let totalHeight = CGFloat(totalExpected) * rowHeight
-        let startY: CGFloat = totalHeight / 2 - rowHeight / 2
-        row.position = CGPoint(x: 0, y: startY - CGFloat(rank - 1) * rowHeight)
-        
-        let rankLabel = OutlinedLabelNode(fontSize: fontSize, strokeWidth: strokeWidth)
-        rankLabel.text = "#\(rank)"
-        rankLabel.position = CGPoint(x: -200, y: 0)
-        row.addChild(rankLabel)
-        
-        let nameLabel = OutlinedLabelNode(fontSize: fontSize, strokeWidth: strokeWidth)
-        let displayName = name.count > 12 ? String(name.prefix(11)) + "…" : name
-        nameLabel.text = displayName
-        nameLabel.position = CGPoint(x: -50, y: 0)
-        row.addChild(nameLabel)
-        
-        let timeLabel = OutlinedLabelNode(fontSize: fontSize, strokeWidth: strokeWidth)
-        let minutes = Int(time) / 60
-        let seconds = Int(time) % 60
-        let hundredths = Int((time.truncatingRemainder(dividingBy: 1)) * 100)
-        timeLabel.text = String(format: "%d:%02d.%02d", minutes, seconds, hundredths)
-        timeLabel.position = CGPoint(x: 150, y: 0)
-        row.addChild(timeLabel)
-        
-        addChild(row)
-        playerRows.append(row)
-        
-        // Pop-in animation
-        row.setScale(0)
-        row.run(SKAction.scale(to: 1.0, duration: 0.2))
-    }
 }

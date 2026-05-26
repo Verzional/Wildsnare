@@ -11,6 +11,7 @@ import GameKit
 
 class RoundOverState: GKState {
     unowned let scene: GameScene
+    private var matchResultSystem: MatchResultSystem?
     
     init(scene: GameScene) {
         self.scene = scene
@@ -18,7 +19,8 @@ class RoundOverState: GKState {
     }
     
     override func isValidNextState(_ stateClass: AnyClass) -> Bool {
-        return stateClass == CountdownState.self || stateClass == GameOverState.self
+        return stateClass == CountdownState.self ||
+            stateClass == GameOverState.self
     }
     
     override func didEnter(from previousState: GKState?) {
@@ -46,33 +48,46 @@ class RoundOverState: GKState {
         
         if gameState.isLastRound {
             stateMachine?.enter(GameOverState.self)
+        } else if scene.matchSystem != nil {
+            showMultiplayerRoundResults()
         } else {
-            let rank = determineLocalPlayerRank()
-            let playerCount = scene.matchSystem?.match?.players.count ?? 1
-            let advantage = WinnerAdvantageConfig.forRank(rank, playerCount: playerCount)
-            
-            if scene.matchSystem != nil {
-                // Multiplayer: host handles next round via onRoundStartReceived
-                stateMachine?.enter(GameOverState.self)
-            } else {
-                // Solo: advance rounds locally
-                gameState.currentRound += 1
-                scene.currentRoundConfig = gameState.currentRoundConfig
-                scene.resetForNextRound()
-                scene.applyWinnerAdvantage(advantage)
-                stateMachine?.enter(CountdownState.self)
-            }
+            // Solo: advance rounds locally
+            gameState.currentRound += 1
+            scene.currentRoundConfig = gameState.currentRoundConfig
+            scene.pendingWinnerAdvantage = .first
+            scene.resetForNextRound()
+            stateMachine?.enter(CountdownState.self)
         }
     }
     
-    private func determineLocalPlayerRank() -> Int {
-        let localTime = scene.gameState?.raceTime ?? 0
+    private func showMultiplayerRoundResults() {
+        let time = scene.gameState?.raceTime ?? 0
+        let currentRound = scene.gameState?.currentRound ?? 1
+        let totalRounds = scene.gameState?.totalRounds ?? 3
         
-        // Solo
-        guard let matchSystem = scene.matchSystem else { return 1 }
+        let resultSystem = MatchResultSystem(scene: scene)
+        matchResultSystem = resultSystem
+        resultSystem.show(
+            localTime: time,
+            title: "Round \(currentRound)/\(totalRounds)",
+            completedStatus: "Loading next round..."
+        ) { [weak self] results in
+            self?.storeWinnerAdvantage(from: results)
+        }
         
-        // Multiplayer
-        let fasterCount = matchSystem.playerTimes.values.filter { $0 < localTime }.count
-        return fasterCount + 1
+        scene.matchSystem?.localPlayerFinished(time: time)
+    }
+    
+    private func storeWinnerAdvantage(from results: [RaceResult]) {
+        let localID = GKLocalPlayer.local.gamePlayerID
+        guard let localIndex = results.firstIndex(where: { $0.senderID == localID }) else {
+            scene.pendingWinnerAdvantage = .none
+            return
+        }
+        
+        scene.pendingWinnerAdvantage = WinnerAdvantageConfig.forRank(
+            localIndex + 1,
+            playerCount: results.count
+        )
     }
 }

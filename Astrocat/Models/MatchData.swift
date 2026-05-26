@@ -61,9 +61,6 @@ struct GameMessage: Codable {
     static func roundStart(senderID: String, roundIndex: Int,randomSeed: UInt64?, startTimeEpoch: TimeInterval) -> GameMessage {
         GameMessage(messageType: .roundStart, randomSeed: randomSeed, senderID: senderID, roundIndex: roundIndex, startTimeEpoch: startTimeEpoch)
     }
-    static func playerUpdate(senderID: String, playerName: String, playerX: CGFloat, playerY: CGFloat, playerDX: CGFloat, playerDY: CGFloat) -> GameMessage {
-        GameMessage(messageType: .playerUpdate, senderID: senderID, playerName: playerName, playerX: playerX, playerY: playerY, playerDX: playerDX, playerDY: playerDY)
-    }
     static func playerFinished(senderID: String, finishTime: TimeInterval) -> GameMessage {
         GameMessage(messageType: .playerFinished, senderID: senderID, finishTime: finishTime)
     }

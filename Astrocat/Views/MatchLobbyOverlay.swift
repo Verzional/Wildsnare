@@ -10,6 +10,7 @@ struct MatchLobbyOverlay: View {
     
     @State private var dotCount: Int = 0
     @State private var catFloat: CGFloat = 0
+    @State private var dotTimer: Timer?
     
     private var dotsText: String {
         String(repeating: ".", count: dotCount)
@@ -78,12 +79,21 @@ struct MatchLobbyOverlay: View {
         .onAppear {
             startDotAnimation()
         }
+        .onDisappear {
+            stopDotAnimation()
+        }
     }
     
     private func startDotAnimation() {
-        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+        stopDotAnimation()
+        dotTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
             dotCount = (dotCount % 3) + 1
         }
+    }
+    
+    private func stopDotAnimation() {
+        dotTimer?.invalidate()
+        dotTimer = nil
     }
 }
 
