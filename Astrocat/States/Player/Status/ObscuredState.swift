@@ -35,8 +35,6 @@ class ObscuredState: GKState {
                 sound.run(SKAction.play())
             }
         }
-        
-        print("Start Comet Dust Animation")
     }
     
     override func update(deltaTime seconds: TimeInterval) {

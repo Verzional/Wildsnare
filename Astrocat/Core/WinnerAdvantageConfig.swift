@@ -16,21 +16,21 @@ struct WinnerAdvantageConfig {
 
 extension WinnerAdvantageConfig {
     static let first = WinnerAdvantageConfig(
-        speedMultiplier: 1.15,
-        impulseMultiplier: 1.05,
-        duration: 4.0
+        speedMultiplier: 1.25,
+        impulseMultiplier: 1.50,
+        duration: 3.0
     )
 
     static let second = WinnerAdvantageConfig(
-        speedMultiplier: 1.1,
-        impulseMultiplier: 1.02,
+        speedMultiplier: 1.20,
+        impulseMultiplier: 1.40,
         duration: 3.0
     )
 
     static let third = WinnerAdvantageConfig(
-        speedMultiplier: 1.05,
-        impulseMultiplier: 1.01,
-        duration: 2.0
+        speedMultiplier: 1.15,
+        impulseMultiplier: 1.30,
+        duration: 3.0
     )
 
     static let none = WinnerAdvantageConfig(
