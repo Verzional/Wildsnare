@@ -24,7 +24,7 @@ class AudioManager {
         }
         
         guard let url = Bundle.main.url(forResource: soundName, withExtension: "mp3") else {
-            print("Could not find \(soundName).mp3")
+//            print("Could not find \(soundName).mp3")
             return
         }
         
@@ -38,7 +38,7 @@ class AudioManager {
             bgmPlayer?.play()
             currentSong = soundName
         } catch {
-            print("Failed to play BGM: \(error.localizedDescription)")
+//            print("Failed to play BGM: \(error.localizedDescription)")
         }
     }
     
